@@ -11,6 +11,7 @@ GROUP_NAME=${LOCAL_GROUP}
 if [[ -z $USER_ID || -z $USER_NAME || -z $GROUP_ID || -z $GROUP_NAME ]]; then
     source "/opt/ros/$ROS_DISTRO/setup.bash"
     source /opt/autoware/setup.bash
+    source /opt/simulator/setup.bash
     exec "$@"
 else
     echo "Starting with user: $USER_NAME >> UID $USER_ID, GID: $GROUP_ID"
@@ -26,7 +27,7 @@ else
     # hadolint ignore=SC1090
     source "/opt/ros/$ROS_DISTRO/setup.bash"
     source /opt/autoware/setup.bash
-
+    source /opt/simulator/setup.bash
     # Execute the command as the user
     exec /usr/sbin/gosu "$USER_NAME" "$@"
 fi

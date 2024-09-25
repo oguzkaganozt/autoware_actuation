@@ -38,8 +38,11 @@ RUN --mount=type=ssh \
   && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
-RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc \
-&& echo "source /opt/simulator/setup.bash" > /etc/bash.bashrc
+RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
+RUN echo "source /opt/simulator/setup.bash" > /etc/bash.bashrc
 
+# Create entrypoint
+COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
+RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
