@@ -28,7 +28,7 @@ FROM ghcr.io/autowarefoundation/autoware:universe AS aws-reinvent-simulator-mono
 
 # Copy simulator from simulator-devel
 COPY src /autoware/src
-COPY --from=simulator-devel /opt/simulator /opt/simulator
+COPY --from=aws-reinvent-simulator-monolithic-devel /opt/autoware /opt/autoware
 
 # Set up rosdep
 RUN --mount=type=ssh \
