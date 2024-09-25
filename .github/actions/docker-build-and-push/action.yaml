@@ -88,7 +88,7 @@ runs:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
           type=raw,value=simulator-monolithic${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=simulator-monolithic${{ inputs.tag-suffix }}-${{ inputs.platform }}-${{ steps.date.outputs.date }}
+          type=raw,value=simulator-monolithic${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
         bake-target: docker-metadata-action-simulator-monolithic
         flavor: |
           latest=false
