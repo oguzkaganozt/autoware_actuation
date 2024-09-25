@@ -26,7 +26,16 @@ RUN  source /opt/ros/"$ROS_DISTRO"/setup.bash \
 FROM ghcr.io/autowarefoundation/autoware:universe AS aws-reinvent-simulator-monolithic
 
 # Copy simulator from simulator-devel
+COPY src /autoware/src
 COPY --from=simulator-devel /opt/simulator /opt/simulator
+
+# Set up rosdep
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  apt-get update \
+  && rosdep update \
+  && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc \
 && echo "source /opt/simulator/setup.bash" > /etc/bash.bashrc
