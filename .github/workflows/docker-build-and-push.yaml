@@ -19,7 +19,6 @@ jobs:
       matrix:
         name:
           - no-cuda
-          - cuda
         include:
           - name: no-cuda
             platform: amd64
