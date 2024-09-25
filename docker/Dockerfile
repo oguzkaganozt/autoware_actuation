@@ -1,4 +1,4 @@
-FROM ghcr.io/autowarefoundation/autoware:universe-devel AS simulator-devel
+FROM ghcr.io/autowarefoundation/autoware:universe-devel AS aws-reinvent-simulator-monolithic-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
@@ -19,7 +19,8 @@ RUN  source /opt/ros/"$ROS_DISTRO"/setup.bash \
 && colcon build --cmake-args \
   " -Wno-dev" \
   " --no-warn-unused-cli" \
-  --install-base /opt/simulator \
+  --install-base /opt/autoware \
+  --merge-install \
   --mixin release compile-commands ccache \
   --base-paths /autoware/src/simulator
 

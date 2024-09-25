@@ -81,6 +81,18 @@ runs:
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
       shell: bash
 
+    - name: Docker meta for autoware:aws-reinvent-simulator-monolithic-devel
+      id: meta-aws-reinvent-simulator-monolithic-devel
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: |
+          type=raw,value=aws-reinvent-simulator-monolithic-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=aws-reinvent-simulator-monolithic-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-aws-reinvent-simulator-monolithic-devel
+        flavor: |
+          latest=false
+
     - name: Docker meta for autoware:aws-reinvent-simulator-monolithic
       id: meta-aws-reinvent-simulator-monolithic
       uses: docker/metadata-action@v5
@@ -107,6 +119,7 @@ runs:
         files: |
           docker/docker-bake.hcl
           ${{ steps.meta-aws-reinvent-simulator-monolithic.outputs.bake-file }}
+          ${{ steps.meta-aws-reinvent-simulator-monolithic-devel.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}
