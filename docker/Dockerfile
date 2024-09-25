@@ -34,6 +34,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && rosdep update \
+  && cd /autoware/src \
   && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
