@@ -30,9 +30,17 @@ runs:
 
     - name: Run vcs import
       run: |
-        mkdir src
-        vcs import src < autoware.repos
-        vcs import src < simulator.repos
+        mkdir -p src
+        if [ ! -f autoware.repos ]; then
+          echo "Error: autoware.repos file not found"
+          exit 1
+        fi
+        vcs import src < autoware.repos || { echo "Error importing autoware.repos"; exit 1; }
+        if [ ! -f simulator.repos ]; then
+          echo "Error: simulator.repos file not found"
+          exit 1
+        fi
+        vcs import src < simulator.repos || { echo "Error importing simulator.repos"; exit 1; }
       shell: bash
 
     - name: Setup Docker Buildx
@@ -80,7 +88,7 @@ runs:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
           type=raw,value=simulator-monolithic${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=simulator-monolithic${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=raw,value=simulator-monolithic${{ inputs.tag-suffix }}-${{ inputs.platform }}-${{ steps.date.outputs.date }}
         bake-target: docker-metadata-action-simulator-monolithic
         flavor: |
           latest=false
