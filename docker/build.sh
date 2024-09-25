@@ -103,9 +103,11 @@ clone_repositories() {
     if [ ! -d "src" ]; then
         mkdir -p src
         vcs import src <autoware.repos
+        vcs import src <simulator.repos
     else
         echo "Source directory already exists. Updating repositories..."
         vcs import src <autoware.repos
+        vcs import src <simulator.repos
         vcs pull src
     fi
 }
@@ -132,9 +134,7 @@ build_images() {
         --set "*.args.BASE_IMAGE=$base_image" \
         --set "*.args.SETUP_ARGS=$setup_args" \
         --set "*.args.LIB_DIR=$lib_dir" \
-        --set "base.tags=ghcr.io/autowarefoundation/autoware:base" \
-        --set "universe-devel.tags=ghcr.io/autowarefoundation/autoware:universe-devel$image_name_suffix" \
-        --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe$image_name_suffix" \
+        --set "simulator.tags=ghcr.io/autowarefoundation/openadkit_demo.autoware:aws-reinvent-simulator" \
         "${targets[@]}"
     set +x
 }
