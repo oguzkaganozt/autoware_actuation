@@ -22,7 +22,7 @@ RUN  source /opt/ros/"$ROS_DISTRO"/setup.bash \
   --mixin release compile-commands ccache \
   --base-paths /autoware/src/simulator
 
-FROM ghcr.io/autowarefoundation/autoware:universe AS simulator-monolithic
+FROM ghcr.io/autowarefoundation/autoware:universe AS aws-reinvent-simulator-monolithic
 
 # Copy simulator from simulator-devel
 COPY --from=simulator-devel /opt/simulator /opt/simulator
