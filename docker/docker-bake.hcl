@@ -1,14 +1,12 @@
 group "default" {
   targets = [
-    "simulator-monolithic"
+    "aws-reinvent-simulator-monolithic"
   ]
 }
+target "docker-metadata-action-aws-reinvent-simulator-monolithic" {}
 
-// For docker/metadata-action
-target "docker-metadata-action-simulator-monolithic" {}
-
-target "simulator-monolithic-devel" {
-  inherits = ["docker-metadata-action-simulator-monolithic"]
+target "aws-reinvent-simulator-monolithic" {
+  inherits = ["docker-metadata-action-aws-reinvent-simulator-monolithic"]
   dockerfile = "docker/Dockerfile"
-  target = "simulator-monolithic"
+  target = "aws-reinvent-simulator-monolithic"
 }

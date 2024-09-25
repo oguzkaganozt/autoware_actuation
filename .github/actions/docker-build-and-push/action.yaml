@@ -81,15 +81,15 @@ runs:
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Docker meta for autoware:simulator-monolithic
-      id: meta-simulator-monolithic
+    - name: Docker meta for autoware:aws-reinvent-simulator-monolithic
+      id: meta-aws-reinvent-simulator-monolithic
       uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=simulator-monolithic${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=simulator-monolithic${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        bake-target: docker-metadata-action-simulator-monolithic
+          type=raw,value=aws-reinvent-simulator-monolithic${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=aws-reinvent-simulator-monolithic${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-aws-reinvent-simulator-monolithic
         flavor: |
           latest=false
 
@@ -106,7 +106,7 @@ runs:
         push: true
         files: |
           docker/docker-bake.hcl
-          ${{ steps.meta-simulator-monolithic.outputs.bake-file }}
+          ${{ steps.meta-aws-reinvent-simulator-monolithic.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}
