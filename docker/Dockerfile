@@ -1,4 +1,5 @@
-FROM ghcr.io/autowarefoundation/autoware:universe-devel AS aws-reinvent-simulator-monolithic-devel
+ARG PLATFORM
+FROM ghcr.io/autowarefoundation/autoware:universe-devel-${PLATFORM} AS aws-reinvent-simulator-monolithic-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
@@ -24,7 +25,7 @@ RUN  source /opt/ros/"$ROS_DISTRO"/setup.bash \
   --mixin release compile-commands ccache \
   --base-paths /autoware/src/simulator
 
-FROM ghcr.io/autowarefoundation/autoware:universe AS aws-reinvent-simulator-monolithic
+FROM ghcr.io/autowarefoundation/autoware:universe-${PLATFORM} AS aws-reinvent-simulator-monolithic
 
 # Copy simulator from simulator-devel
 COPY src /autoware/src

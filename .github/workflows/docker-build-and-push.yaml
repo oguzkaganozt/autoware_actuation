@@ -67,6 +67,7 @@ jobs:
             *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
             *.args.LIB_DIR=${{ matrix.lib_dir }}
+            *.args.PLATFORM=${{ matrix.platform }}
           tag-suffix: ${{ matrix.tag-suffix }}
 
       - name: Show disk space
