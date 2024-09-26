@@ -19,7 +19,6 @@ jobs:
       matrix:
         name:
           - no-cuda
-          - cuda
         include:
           - name: no-cuda
             platform: arm64
@@ -27,11 +26,7 @@ jobs:
             lib_dir: aarch64
             setup-args: --no-nvidia
             tag-suffix: ""
-          - name: cuda
-            platform: arm64
-            base_image_env: base_image
-            lib_dir: aarch64
-            tag-suffix: -cuda
+
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
