@@ -25,6 +25,9 @@ RUN  source /opt/ros/"$ROS_DISTRO"/setup.bash \
   --mixin release compile-commands ccache \
   --base-paths /autoware/src/simulator
 
+RUN find /opt/autoware/lib -type f -name "*.py" -exec chmod +x {} \;
+RUN find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \;
+
 FROM ghcr.io/autowarefoundation/autoware:universe-${PLATFORM} AS aws-reinvent-simulator-monolithic
 
 # Copy simulator from simulator-devel
