@@ -41,7 +41,6 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
-RUN echo "source /opt/simulator/setup.bash" > /etc/bash.bashrc
 
 # Create entrypoint
 COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
