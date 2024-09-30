@@ -25,7 +25,7 @@ services:
       launch_rviz:=true
 
   planning-control:
-    image: ghcr.io/autowarefoundation/autoware:aws-reinvent-planning-control
+    image: ghcr.io/autowarefoundation/openadkit_demo.autoware:aws-reinvent-planning-control-amd64
     volumes:
       - /dev/shm:/dev/shm
       - /etc/localtime:/etc/localtime:ro
