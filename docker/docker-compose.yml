@@ -2,7 +2,7 @@ version: '2.17'
 
 services:
   simulator:
-    image: ghcr.io/autowarefoundation/openadkit_demo.autoware:aws-reinvent-simulator-monolithic-amd64
+    image: ghcr.io/autowarefoundation/openadkit_demo.autoware:aws-reinvent-simulator-amd64
     volumes:
       - /dev/shm:/dev/shm
       - /etc/localtime:/etc/localtime:ro
@@ -25,7 +25,7 @@ services:
       launch_rviz:=true
 
   planning-control:
-    image: ghcr.io/autowarefoundation/autoware:universe-amd64
+    image: ghcr.io/autowarefoundation/autoware:aws-reinvent-planning-control
     volumes:
       - /dev/shm:/dev/shm
       - /etc/localtime:/etc/localtime:ro
@@ -35,7 +35,7 @@ services:
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
     command: >
       ros2 launch autoware_launch planning_simulator.launch.xml
-      map_path:=/opt/autoware/share/kashiwanoha_map
+      map_path:=/opt/autoware/share/kashiwanoha_map/map
       vehicle_model:=sample_vehicle
       sensor_model:=sample_sensor_kit
       scenario_simulation:=true

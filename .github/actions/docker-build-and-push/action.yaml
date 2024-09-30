@@ -81,27 +81,39 @@ runs:
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Docker meta for autoware:aws-reinvent-simulator-monolithic-devel
-      id: meta-aws-reinvent-simulator-monolithic-devel
+    - name: Docker meta for autoware:aws-reinvent-simulator-devel
+      id: meta-aws-reinvent-simulator-devel
       uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=aws-reinvent-simulator-monolithic-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=aws-reinvent-simulator-monolithic-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        bake-target: docker-metadata-action-aws-reinvent-simulator-monolithic-devel
+          type=raw,value=aws-reinvent-simulator-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=aws-reinvent-simulator-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-aws-reinvent-simulator-devel
         flavor: |
           latest=false
 
-    - name: Docker meta for autoware:aws-reinvent-simulator-monolithic
-      id: meta-aws-reinvent-simulator-monolithic
+    - name: Docker meta for autoware:aws-reinvent-simulator
+      id: meta-aws-reinvent-simulator
       uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=aws-reinvent-simulator-monolithic${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=aws-reinvent-simulator-monolithic${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        bake-target: docker-metadata-action-aws-reinvent-simulator-monolithic
+          type=raw,value=aws-reinvent-simulator${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=aws-reinvent-simulator${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-aws-reinvent-simulator
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:aws-reinvent-planning-control
+      id: meta-aws-reinvent-planning-control
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: |
+          type=raw,value=aws-reinvent-planning-control${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=aws-reinvent-planning-control${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-aws-reinvent-planning-control
         flavor: |
           latest=false
 
@@ -118,8 +130,9 @@ runs:
         push: true
         files: |
           docker/docker-bake.hcl
-          ${{ steps.meta-aws-reinvent-simulator-monolithic.outputs.bake-file }}
-          ${{ steps.meta-aws-reinvent-simulator-monolithic-devel.outputs.bake-file }}
+          ${{ steps.meta-aws-reinvent-simulator.outputs.bake-file }}
+          ${{ steps.meta-aws-reinvent-simulator-devel.outputs.bake-file }}
+          ${{ steps.meta-aws-reinvent-planning-control.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}

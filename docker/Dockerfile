@@ -1,5 +1,5 @@
 ARG PLATFORM
-FROM ghcr.io/autowarefoundation/autoware:universe-devel-${PLATFORM} AS aws-reinvent-simulator-monolithic-devel
+FROM ghcr.io/autowarefoundation/autoware:universe-devel-20240927 AS aws-reinvent-simulator-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
@@ -28,7 +28,7 @@ RUN  source /opt/ros/"$ROS_DISTRO"/setup.bash \
 RUN find /opt/autoware/lib -type f -name "*.py" -exec chmod +x {} \;
 RUN find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \;
 
-FROM ghcr.io/autowarefoundation/autoware:universe-${PLATFORM} AS aws-reinvent-simulator-monolithic
+FROM ghcr.io/autowarefoundation/autoware:universe-20240927 AS aws-reinvent-simulator
 
 # Copy simulator from simulator-devel
 COPY src /autoware/src
@@ -40,10 +40,20 @@ RUN --mount=type=ssh \
   apt-get update \
   && rosdep update \
   && cd /autoware \
-  && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
+  && rosdep install -y --from-paths src --ignore-src --dependency-types=exec --rosdistro $ROS_DISTRO \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
+
+# Create entrypoint
+COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
+RUN chmod +x /ros_entrypoint.sh
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+FROM ghcr.io/autowarefoundation/autoware:universe-20240927 AS aws-reinvent-planning-control
+
+COPY --from=aws-reinvent-simulator /opt/autoware/share/kashiwanoha_map /opt/autoware/share/kashiwanoha_map
 
 # Create entrypoint
 COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
