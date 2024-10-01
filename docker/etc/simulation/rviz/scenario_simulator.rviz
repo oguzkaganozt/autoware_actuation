@@ -26,15 +26,11 @@ Panels:
       - /Current View1
     Name: Views
     Splitter Ratio: 0.5
-  - Class: tier4_localization_rviz_plugin/InitialPoseButtonPanel
-    Name: InitialPoseButtonPanel
   - Class: rviz_common/Time
     Experimental: false
     Name: Time
     SyncMode: 0
     SyncSource: ""
-  - Class: AutowareScreenCapturePanel
-    Name: AutowareScreenCapturePanel
 Visualization Manager:
   Class: ""
   Displays:
@@ -703,153 +699,6 @@ Visualization Manager:
               Value: false
           Enabled: false
           Name: Segmentation
-        - Class: rviz_common/Group
-          Displays:
-            - BUS:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              CAR:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              CYCLIST:
-                Alpha: 0.9990000128746033
-                Color: 119; 11; 32
-              Class: autoware_auto_perception_rviz_plugin/DetectedObjects
-              Display Acceleration: true
-              Display Label: true
-              Display PoseWithCovariance: true
-              Display Predicted Path Confidence: true
-              Display Predicted Paths: true
-              Display Twist: true
-              Display UUID: true
-              Display Velocity: true
-              Enabled: true
-              Line Width: 0.029999999329447746
-              MOTORCYCLE:
-                Alpha: 0.9990000128746033
-                Color: 119; 11; 32
-              Name: DetectedObjects
-              Namespaces:
-                {}
-              PEDESTRIAN:
-                Alpha: 0.9990000128746033
-                Color: 255; 192; 203
-              TRAILER:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              TRUCK:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              Topic:
-                Depth: 5
-                Durability Policy: Volatile
-                History Policy: Keep Last
-                Reliability Policy: Reliable
-                Value: /perception/object_recognition/detection/objects
-              UNKNOWN:
-                Alpha: 0.9990000128746033
-                Color: 255; 255; 255
-              Value: true
-          Enabled: true
-          Name: Detection
-        - Class: rviz_common/Group
-          Displays:
-            - BUS:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              CAR:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              CYCLIST:
-                Alpha: 0.9990000128746033
-                Color: 119; 11; 32
-              Class: autoware_auto_perception_rviz_plugin/TrackedObjects
-              Display Acceleration: true
-              Display Label: true
-              Display PoseWithCovariance: true
-              Display Predicted Path Confidence: true
-              Display Predicted Paths: true
-              Display Twist: true
-              Display UUID: true
-              Display Velocity: true
-              Enabled: true
-              Line Width: 0.029999999329447746
-              MOTORCYCLE:
-                Alpha: 0.9990000128746033
-                Color: 119; 11; 32
-              Name: TrackedObjects
-              Namespaces:
-                {}
-              PEDESTRIAN:
-                Alpha: 0.9990000128746033
-                Color: 255; 192; 203
-              TRAILER:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              TRUCK:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              Topic:
-                Depth: 5
-                Durability Policy: Volatile
-                History Policy: Keep Last
-                Reliability Policy: Reliable
-                Value: /perception/object_recognition/tracking/objects
-              UNKNOWN:
-                Alpha: 0.9990000128746033
-                Color: 255; 255; 255
-              Value: true
-          Enabled: true
-          Name: Tracking
-        - Class: rviz_common/Group
-          Displays:
-            - BUS:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              CAR:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              CYCLIST:
-                Alpha: 0.9990000128746033
-                Color: 119; 11; 32
-              Class: autoware_auto_perception_rviz_plugin/PredictedObjects
-              Display Acceleration: true
-              Display Label: true
-              Display PoseWithCovariance: false
-              Display Predicted Path Confidence: true
-              Display Predicted Paths: true
-              Display Twist: false
-              Display UUID: true
-              Display Velocity: true
-              Enabled: true
-              Line Width: 0.029999999329447746
-              MOTORCYCLE:
-                Alpha: 0.9990000128746033
-                Color: 119; 11; 32
-              Name: PredictedObjects
-              Namespaces:
-                {}
-              PEDESTRIAN:
-                Alpha: 0.9990000128746033
-                Color: 255; 192; 203
-              TRAILER:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              TRUCK:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              Topic:
-                Depth: 5
-                Durability Policy: Volatile
-                History Policy: Keep Last
-                Reliability Policy: Reliable
-                Value: /perception/object_recognition/objects
-              UNKNOWN:
-                Alpha: 0.9990000128746033
-                Color: 255; 255; 255
-              Value: true
-          Enabled: true
-          Name: Prediction
         - Class: rviz_common/Group
           Displays:
             - Class: rviz_default_plugins/Image
@@ -1704,53 +1553,6 @@ Visualization Manager:
               Use Fixed Frame: true
               Use rainbow: true
               Value: false
-            - BUS:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              CAR:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              CYCLIST:
-                Alpha: 0.9990000128746033
-                Color: 119; 11; 32
-              Class: autoware_auto_perception_rviz_plugin/DetectedObjects
-              Display Acceleration: true
-              Display Label: true
-              Display PoseWithCovariance: true
-              Display Predicted Path Confidence: true
-              Display Predicted Paths: true
-              Display Twist: false
-              Display UUID: true
-              Display Velocity: true
-              Enabled: true
-              Line Width: 0.029999999329447746
-              MOTORCYCLE:
-                Alpha: 0.9990000128746033
-                Color: 119; 11; 32
-              Name: Detected Objects
-              Namespaces:
-                label: true
-                shape: true
-                velocity: true
-              PEDESTRIAN:
-                Alpha: 0.9990000128746033
-                Color: 255; 192; 203
-              TRAILER:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              TRUCK:
-                Alpha: 0.9990000128746033
-                Color: 30; 144; 255
-              Topic:
-                Depth: 5
-                Durability Policy: Volatile
-                History Policy: Keep Last
-                Reliability Policy: Reliable
-                Value: /perception/object_recognition/detection/objects
-              UNKNOWN:
-                Alpha: 0.9990000128746033
-                Color: 255; 255; 255
-              Value: true
             - Alpha: 0.699999988079071
               Class: rviz_default_plugins/Map
               Color Scheme: map
@@ -1851,7 +1653,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/ThirdPersonFollower
-      Distance: 40.10762405395508
+      Distance: 35
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1866,10 +1668,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.1947973370552063
+      Pitch: 0.3
       Target Frame: ego
       Value: ThirdPersonFollower (rviz_default_plugins)
-      Yaw: 3.1273813247680664
+      Yaw: 3.14
     Saved:
       - Class: rviz_default_plugins/ThirdPersonFollower
         Distance: 18
