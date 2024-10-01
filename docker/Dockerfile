@@ -45,6 +45,9 @@ RUN --mount=type=ssh \
 
 RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 
+# Copy simulation scenario and map
+COPY docker/etc/simulation /autoware/scenario-sim
+
 # Create entrypoint
 COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
@@ -53,7 +56,11 @@ CMD ["/bin/bash"]
 
 FROM ghcr.io/autowarefoundation/autoware:universe-20240927 AS aws-reinvent-planning-control
 
+# Copy sample scenario map
 COPY --from=aws-reinvent-simulator /opt/autoware/share/kashiwanoha_map /opt/autoware/share/kashiwanoha_map
+
+# Copy simulation scenario and map
+COPY docker/etc/simulation /autoware/scenario-sim
 
 # Create entrypoint
 COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
