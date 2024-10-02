@@ -28,6 +28,8 @@ services:
     volumes:
       - /dev/shm:/dev/shm
       - /etc/localtime:/etc/localtime:ro
+      - ./etc/simulation/config/static_obstacle_avoidance.param.yaml:/opt/autoware/share/autoware_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/autoware_behavior_path_static_obstacle_avoidance_module/static_obstacle_avoidance.param.yaml
+      - ./etc/simulation/config/common.param.yaml:/opt/autoware/share/autoware_launch/config/planning/scenario_planning/common/common.param.yaml
     network_mode: "host"
     environment:
       - ROS_DOMAIN_ID=99
@@ -53,4 +55,4 @@ services:
       - DISPLAY=${DISPLAY}
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
     command: >
-      rviz2 -d /autoware/scenario-sim/rviz/scenario_simulator.rviz
+      rviz2 -d /opt/autoware/share/autoware_launch/rviz/autoware.rviz
