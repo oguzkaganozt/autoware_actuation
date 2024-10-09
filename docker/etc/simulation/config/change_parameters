@@ -2,9 +2,9 @@
 
 # Define simulation parameters in a table according to the simulation id
 declare -A params=(
-    [1]="9.0 1.5"
-    [2]="9.0 1.0"
-    [3]="4.17 0.2"
+    [1]="9.0 1.5"   # ego cant complete the scenario
+    [2]="9.0 1.0"   # ego cant complete the scenario
+    [3]="9.0 0.2"   # ego can complete the scenario
 )
 
 # Select parameters according to SIMULATION_ID
