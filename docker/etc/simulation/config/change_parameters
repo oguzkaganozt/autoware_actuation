@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Define simulation parameters in a table according to the simulation id
+declare -A params=(
+    [1]="9.0 1.5"
+    [2]="9.0 1.0"
+    [3]="4.17 0.2"
+)
+
+# Select parameters according to SIMULATION_ID
+if [[ -v params[$SIMULATION_ID] ]]; then
+    read -r MAX_VEL HARD_MARGIN <<< "${params[$SIMULATION_ID]}"
+else
+    # Default values if SIMULATION_ID is not in the table
+    MAX_VEL=4.17
+    HARD_MARGIN=0.2
+fi
+
+# change common parameters
+src_path=/autoware/config/common.param.yaml
+dest_path=/opt/autoware/share/autoware_launch/config/planning/scenario_planning/common
+sed -i "3s/max_vel:.*/max_vel: ${MAX_VEL}/" "$src_path"
+
+if cp "$src_path" "$dest_path"; then
+    echo -e "\e[32mCommon parameters successfully changed\e[0m"
+else
+    echo -e "\e[31mError: Failed to change common parameters\e[0m" >&2
+    exit 1
+fi
+
+# change static obstacle avoidance parameters
+src_path=/autoware/config/static_obstacle_avoidance.param.yaml
+dest_path=/opt/autoware/share/autoware_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/autoware_behavior_path_static_obstacle_avoidance_module
+sed -i "71s/hard_margin:.*/hard_margin: ${HARD_MARGIN}/" "$src_path"
+
+if cp "$src_path" "$dest_path"; then
+    echo -e "\e[32mStatic obstacle avoidance parameters successfully changed\e[0m"
+else
+    echo -e "\e[31mError: Failed to change static obstacle avoidance parameters\e[0m" >&2
+    exit 1
+fi
+
+echo -e "\e[32mChange parameters script finished\n-----------------------------------\e[0m"
