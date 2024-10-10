@@ -1,5 +1,8 @@
 #!/bin/bash
 
+result_file=/autoware/result.txt
+sed -i "s|output_file:.*|output_file: ${result_file}|" /opt/autoware/share/autoware_planning_evaluator/config/planning_evaluator.param.yaml
+
 # Define simulation parameters in a table according to the simulation id
 declare -A params=(
     [1]="9.0 1.5"   # ego cant complete the scenario

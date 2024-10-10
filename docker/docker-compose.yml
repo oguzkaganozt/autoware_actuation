@@ -2,6 +2,8 @@ services:
   simulator:
     image: ghcr.io/autowarefoundation/openadkit_demo.autoware:aws-reinvent-simulator-amd64
     network_mode: "host"
+    volumes:
+      - ./etc/simulation:/autoware/scenario-sim
     environment:
       - ROS_DOMAIN_ID=99
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
@@ -18,10 +20,12 @@ services:
       launch_rviz:=false
 
   planning-control:
-    image: ghcr.io/autowarefoundation/openadkit_demo.autoware:aws-reinvent-planning-control-amd64
+    image: ghcr.io/autowarefoundation/autoware:universe-20240927
     volumes:
       - ./etc/simulation/config:/autoware/config
       - ./etc/simulation/config/change_parameters:/usr/local/bin/change_parameters
+      - ./etc/simulation:/autoware/scenario-sim
+      - ./results:/autoware/result
     network_mode: "host"
     environment:
       - ROS_DOMAIN_ID=99
