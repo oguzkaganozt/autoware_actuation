@@ -26,3 +26,4 @@ capture/
 
 # Node.js
 node_modules/
+docker/test

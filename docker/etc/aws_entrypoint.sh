@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1090,SC1091
 
-# Change parameters
-change_parameters
+# Set output file by environment variable
+if [ -n "$PLANNING_OUTPUT_FILE" ]; then
+    change_parameters
+    OUTPUT_FILE=$PLANNING_OUTPUT_FILE
+    echo "Output file: $OUTPUT_FILE"
+elif [ -n "$SIMULATION_OUTPUT_DIRECTORY" ]; then
+    OUTPUT_FILE=$SIMULATION_OUTPUT_DIRECTORY/scenario_test_runner/result.junit.xml
+    echo "Output file: $OUTPUT_FILE"
+else
+    echo "Warning: No output file is set" >&2
+fi
 
 # Run the launch command
 echo "Running: $@"
@@ -13,16 +22,6 @@ ros_pid=$!
 
 # Create output directory
 mkdir -p /autoware/result
-
-# Set output file by environment variable
-if [ -n "$PLANNING_OUTPUT_FILE" ]; then
-    OUTPUT_FILE=$PLANNING_OUTPUT_FILE
-elif [ -n "$SIMULATION_OUTPUT_DIRECTORY" ]; then
-    OUTPUT_FILE=$SIMULATION_OUTPUT_DIRECTORY/scenario_test_runner/result.junit.xml
-else
-    echo "Error: No output file is set" >&2
-    exit 1
-fi
 
 # Function to upload the output video to an S3 object
 uploadToS3() {
@@ -47,14 +46,6 @@ uploadToS3() {
     echo "Upload completed."
 }
 
-cat_output() {
-    echo -e "\e[32mOutput file: $OUTPUT_FILE\e[0m"
-    echo "------------------------------"
-    echo "|      Output Result:         |"
-    echo "------------------------------"
-    cat $OUTPUT_FILE
-}
-
 # Function to handle termination
 cleanup() {
     echo "Terminating processes..."
@@ -64,8 +55,7 @@ cleanup() {
 
     # Call the uploadToS3 function
     if [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
-        #uploadToS3 enable once AWS is configured
-        cat_output
+        uploadToS3
     else
         echo "Output file not found or not set. Skipping S3 upload."
     fi
