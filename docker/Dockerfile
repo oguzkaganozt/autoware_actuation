@@ -3,6 +3,7 @@ FROM ghcr.io/autowarefoundation/autoware:universe-devel-20240927 AS aws-reinvent
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 COPY src /autoware/src
 
@@ -29,6 +30,7 @@ RUN find /opt/autoware/lib -type f -name "*.py" -exec chmod +x {} \;
 RUN find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \;
 
 FROM ghcr.io/autowarefoundation/autoware:universe-20240927 AS aws-reinvent-simulator
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # Copy simulator from simulator-devel
 COPY src /autoware/src
@@ -63,6 +65,7 @@ ENTRYPOINT ["/aws_entrypoint.sh"]
 CMD ["/bin/bash"]
 
 FROM ghcr.io/autowarefoundation/autoware:universe-20240927 AS aws-reinvent-planning-control
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # Install AWS CLI
 RUN curl -fsSL https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip -o /tmp/aws-cli.zip && \
