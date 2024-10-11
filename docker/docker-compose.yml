@@ -7,6 +7,7 @@ services:
     environment:
       - ROS_DOMAIN_ID=99
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - SIMULATION_OUTPUT_DIRECTORY=/autoware/result
     command: >
       ros2 launch scenario_test_runner scenario_test_runner.launch.py
       architecture_type:=awf/universe/20240605
@@ -18,9 +19,10 @@ services:
       global_frame_rate:=15
       launch_autoware:=false
       launch_rviz:=false
+      output_directory:=/autoware/result
 
   planning-control:
-    image: ghcr.io/autowarefoundation/openadkit_demo.autoware:aws-reinvent-planning-control
+    image: ghcr.io/autowarefoundation/openadkit_demo.autoware:aws-reinvent-planning-control-amd64
     volumes:
       - ./etc/simulation/config:/autoware/config
       - ./etc/simulation/config/change_parameters:/usr/local/bin/change_parameters
@@ -30,7 +32,7 @@ services:
       - ROS_DOMAIN_ID=99
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - SIMULATION_ID=1
-      - OUTPUT_FILE=/autoware/result/result.txt
+      - PLANNING_OUTPUT_FILE=/autoware/result/planning_result.txt
     command: >
       ros2 launch autoware_launch planning_simulator.launch.xml
       map_path:=/autoware/scenario-sim/map

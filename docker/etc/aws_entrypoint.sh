@@ -1,10 +1,28 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1090,SC1091
 
+# Change parameters
+change_parameters
+
+# Run the launch command
+echo "Running: $@"
 source "/opt/ros/$ROS_DISTRO/setup.bash"
 source /opt/autoware/setup.bash
 "$@" &
 ros_pid=$!
+
+# Create output directory
+mkdir -p /autoware/result
+
+# Set output file by environment variable
+if [ -n "$PLANNING_OUTPUT_FILE" ]; then
+    OUTPUT_FILE=$PLANNING_OUTPUT_FILE
+elif [ -n "$SIMULATION_OUTPUT_DIRECTORY" ]; then
+    OUTPUT_FILE=$SIMULATION_OUTPUT_DIRECTORY/scenario_test_runner/result.junit.xml
+else
+    echo "Error: No output file is set" >&2
+    exit 1
+fi
 
 # Function to upload the output video to an S3 object
 uploadToS3() {
@@ -31,6 +49,9 @@ uploadToS3() {
 
 cat_output() {
     echo -e "\e[32mOutput file: $OUTPUT_FILE\e[0m"
+    echo "------------------------------"
+    echo "|      Output Result:         |"
+    echo "------------------------------"
     cat $OUTPUT_FILE
 }
 
