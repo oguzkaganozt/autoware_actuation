@@ -22,7 +22,8 @@ else
 fi
 
 # change planning evaluator output file
-if sed -i "s|output_file:.*|output_file: ${PLANNING_OUTPUT_FILE}|" /opt/autoware/share/autoware_planning_evaluator/config/planning_evaluator.param.yaml; then
+planning_evaluator_param_path=/opt/autoware/share/autoware_planning_evaluator/config/planning_evaluator.param.yaml
+if sed -i "s|output_file:.*|output_file: ${PLANNING_OUTPUT_FILE}|" "$planning_evaluator_param_path"; then
     echo -e "\e[32mPlanning evaluator output file is set to ${PLANNING_OUTPUT_FILE}\e[0m"
 else
     echo -e "\e[31mError: Failed to set planning evaluator output file\e[0m" >&2

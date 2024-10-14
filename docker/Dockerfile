@@ -46,14 +46,6 @@ RUN --mount=type=ssh \
 
 RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 
-# Install AWS CLI
-RUN curl -fsSL https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip -o /tmp/aws-cli.zip && \
-  unzip -q -d /tmp /tmp/aws-cli.zip && \
-  /tmp/aws/install && \
-  rm -rf /tmp/aws && \
-  echo "AWS CLI installed. Checking configuration" && \
-  aws --version
-
 # Copy simulation scenario and map
 COPY docker/etc/simulation /autoware/scenario-sim
 
@@ -68,15 +60,8 @@ FROM ghcr.io/autowarefoundation/autoware:universe-20240927 AS aws-reinvent-plann
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
-  && apt-get install -y curl unzip
-
-# Install AWS CLI
-RUN curl -fsSL https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip -o /tmp/aws-cli.zip && \
-  unzip -q -d /tmp /tmp/aws-cli.zip && \
-  /tmp/aws/install && \
-  rm -rf /tmp/aws && \
-  echo "AWS CLI installed. Checking configuration" && \
-  aws --version
+  && apt-get install -y curl unzip \
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 # Create entrypoint
 COPY docker/etc/aws_entrypoint.sh /aws_entrypoint.sh
