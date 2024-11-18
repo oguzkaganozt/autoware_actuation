@@ -1,9 +1,13 @@
 # Install all RViz plugins from autoware.universe
 # Install all message types of autoware.universe
-FROM ghcr.io/autowarefoundation/autoware:universe-devel AS builder
+FROM ghcr.io/autowarefoundation/autoware:base AS simulator-tools
 
-# Copy scenario_simulator to src
+WORKDIR /autoware
+
+# Copy scenario_simulator and pull external dependencies
 COPY src/simulator/scenario_simulator/ /autoware/src/simulator/scenario_simulator/
+RUN mkdir -p src/scenario_simulator/external \
+  && vcs import src/scenario_simulator/external < dependency_${ROS_DISTRO}.repos
 
 # Set up rosdep
 RUN --mount=type=ssh \
@@ -24,26 +28,30 @@ RUN  source /opt/ros/"$ROS_DISTRO"/setup.bash \
   --mixin release compile-commands ccache \
   --base-paths /autoware/src/simulator
 
+# Make all Python scripts executable
 RUN find /opt/autoware/lib -type f -name "*.py" -exec chmod +x {} \;
 RUN find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \;
 
-# simulator-tools
-FROM ghcr.io/autowarefoundation/autoware:universe AS simulator-tools
+CMD ["/bin/bash"]
 
-COPY src/simulator/scenario_simulator/ /autoware/src/simulator/scenario_simulator/
-COPY --from=builder /opt/autoware /opt/autoware
+# # simulator-tools
+# FROM ghcr.io/autowarefoundation/autoware:base AS simulator-tools
 
-# Set up rosdep
-RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  apt-get update \
-  && apt-get install -y curl unzip \
-  && rosdep update \
-  && cd /autoware \
-  && rosdep install -y --from-paths src --ignore-src --dependency-types=exec --rosdistro $ROS_DISTRO \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache
+# COPY --from=builder /autoware /autoware
+# COPY --from=builder /opt/autoware /opt/autoware
 
-RUN echo "source /opt/autoware/setup.bash" >> /etc/bash.bashrc
+# # Set up rosdep
+# RUN --mount=type=ssh \
+#   --mount=type=cache,target=/var/cache/apt,sharing=locked \
+#   apt-get update \
+#   && apt-get install -y curl unzip \
+#   && rosdep update \
+#   && cd /autoware \
+#   && rosdep install -y --from-paths src --ignore-src --dependency-types=exec --rosdistro $ROS_DISTRO \
+#   && apt-get autoremove -y && rm -rf "$HOME"/.cache
+
+# RUN echo "source /opt/autoware/setup.bash" >> /etc/bash.bashrc
+# CMD ["/bin/bash"]
 
 # # Install VNC server with NoVNC
 # RUN apt-get update && apt-get install -y \
@@ -70,4 +78,4 @@ RUN echo "source /opt/autoware/setup.bash" >> /etc/bash.bashrc
 # EXPOSE 5900 6080
 
 # ENTRYPOINT ["/usr/local/bin/start-vnc"]
-CMD ["/bin/bash"]
+# CMD ["/bin/bash"]
