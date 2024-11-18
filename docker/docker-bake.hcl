@@ -104,6 +104,6 @@ target "universe" {
 
 target "simulator-tools" {
   inherits = ["docker-metadata-action-simulator-tools"]
-  dockerfile = "docker/tools/Dockerfile"
+  dockerfile = "docker/simulator-tools/Dockerfile"
   target = "simulator-tools"
 }
