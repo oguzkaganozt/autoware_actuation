@@ -2,9 +2,8 @@
 # Install all message types of autoware.universe
 FROM ghcr.io/autowarefoundation/autoware:universe-devel AS builder
 
-# Build tierIV simulator
-COPY simulator.repos simulator.repos
-RUN vcs import src < simulator.repos
+# Copy scenario_simulator to src
+COPY src/simulator/scenario_simulator/ /autoware/src/simulator/scenario_simulator/
 
 # Set up rosdep
 RUN --mount=type=ssh \
@@ -30,8 +29,8 @@ RUN find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \;
 
 # simulator-visualizer
 FROM ghcr.io/autowarefoundation/autoware:universe AS simulator-visualizer
-COPY simulator.repos simulator.repos
-RUN vcs import src < simulator.repos
+
+COPY src/simulator/scenario_simulator/ /autoware/src/simulator/scenario_simulator/
 COPY --from=builder /opt/autoware /opt/autoware
 
 # Set up rosdep
@@ -46,26 +45,29 @@ RUN --mount=type=ssh \
 
 RUN echo "source /opt/autoware/setup.bash" >> /etc/bash.bashrc
 
-# Install VNC server with NoVNC
-RUN apt-get update && apt-get install -y \
-    tigervnc-standalone-server \
-    tigervnc-common \
-    novnc \
-    x11vnc \
-    xvfb \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# # Install VNC server with NoVNC
+# RUN apt-get update && apt-get install -y \
+#     tigervnc-standalone-server \
+#     tigervnc-common \
+#     novnc \
+#     x11vnc \
+#     xvfb \
+#     && apt-get clean \
+#     && rm -rf /var/lib/apt/lists/*
 
-# Set up NoVNC according to https://github.com/novnc/noVNC/blob/master/docs/EMBEDDING.md
+# # Set up NoVNC according to https://github.com/novnc/noVNC/blob/master/docs/EMBEDDING.md
 
-# Set up VNC password
-RUN mkdir -p ~/.vnc && \
-    echo "password" | vncpasswd -f > ~/.vnc/passwd && \
-    chmod 600 ~/.vnc/passwd
+# # Set up VNC password
+# RUN mkdir -p ~/.vnc && \
+#     echo "password" | vncpasswd -f > ~/.vnc/passwd && \
+#     chmod 600 ~/.vnc/passwd
 
-# Set up startup script for VNC
-COPY scripts/start-vnc.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/start-vnc.sh
+# # Set up startup script for VNC
+# COPY scripts/start-vnc.sh /usr/local/bin/start-vnc
+# RUN chmod +x /usr/local/bin/start-vnc
 
-# Expose VNC and NoVNC ports
-EXPOSE 5900 6080
+# # Expose VNC and NoVNC ports
+# EXPOSE 5900 6080
+
+# ENTRYPOINT ["/usr/local/bin/start-vnc"]
+CMD ["/bin/bash"]
