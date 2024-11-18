@@ -1,59 +1,38 @@
 # Install all RViz plugins from autoware.universe
 # Install all message types of autoware.universe
-FROM ghcr.io/autowarefoundation/autoware:base AS simulator-tools
-
+FROM ghcr.io/autowarefoundation/autoware:universe-devel AS simulator-tools
 WORKDIR /autoware
 
 # Copy scenario_simulator and pull external dependencies
-COPY src/simulator/scenario_simulator/ /autoware/src/simulator/scenario_simulator/
-RUN mkdir -p src/scenario_simulator/external \
-  && vcs import src/scenario_simulator/external < dependency_${ROS_DISTRO}.repos
+COPY src/simulator /autoware/src/simulator
+RUN mkdir -p src/simulator/scenario_simulator/external \
+  && vcs import src/simulator/scenario_simulator/external < src/simulator/scenario_simulator/dependency_${ROS_DISTRO}.repos
 
-# Set up rosdep
+# Install rosdep dependencies
 RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
+  && apt-get install -y curl unzip \
   && rosdep update \
-  && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
+  && rosdep install -y --from-paths src --ignore-src --dependency-types=exec --rosdistro $ROS_DISTRO \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 # Build simulator
-RUN  source /opt/ros/"$ROS_DISTRO"/setup.bash \
-&& source /opt/autoware/setup.bash \
-&& colcon build --cmake-args \
+RUN source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && colcon build --cmake-args \
   " -Wno-dev" \
   " --no-warn-unused-cli" \
   --install-base /opt/autoware \
   --merge-install \
   --mixin release compile-commands ccache \
-  --base-paths /autoware/src/simulator
+  --packages-skip-regex ".*autoware.*" \
+  && rm -rf build/ install/ log/
 
-# Make all Python scripts executable
 RUN find /opt/autoware/lib -type f -name "*.py" -exec chmod +x {} \;
 RUN find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \;
-
 CMD ["/bin/bash"]
 
-# # simulator-tools
-# FROM ghcr.io/autowarefoundation/autoware:base AS simulator-tools
-
-# COPY --from=builder /autoware /autoware
-# COPY --from=builder /opt/autoware /opt/autoware
-
-# # Set up rosdep
-# RUN --mount=type=ssh \
-#   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-#   apt-get update \
-#   && apt-get install -y curl unzip \
-#   && rosdep update \
-#   && cd /autoware \
-#   && rosdep install -y --from-paths src --ignore-src --dependency-types=exec --rosdistro $ROS_DISTRO \
-#   && apt-get autoremove -y && rm -rf "$HOME"/.cache
-
-# RUN echo "source /opt/autoware/setup.bash" >> /etc/bash.bashrc
-# CMD ["/bin/bash"]
-
-# # Install VNC server with NoVNC
+# # # Install VNC server with NoVNC
 # RUN apt-get update && apt-get install -y \
 #     tigervnc-standalone-server \
 #     tigervnc-common \
