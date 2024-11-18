@@ -27,8 +27,8 @@ RUN  source /opt/ros/"$ROS_DISTRO"/setup.bash \
 RUN find /opt/autoware/lib -type f -name "*.py" -exec chmod +x {} \;
 RUN find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \;
 
-# simulator-visualizer
-FROM ghcr.io/autowarefoundation/autoware:universe AS simulator-visualizer
+# simulator-tools
+FROM ghcr.io/autowarefoundation/autoware:universe AS simulator-tools
 
 COPY src/simulator/scenario_simulator/ /autoware/src/simulator/scenario_simulator/
 COPY --from=builder /opt/autoware /opt/autoware

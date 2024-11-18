@@ -209,6 +209,18 @@ runs:
         flavor: |
           latest=auto
 
+    - name: Docker meta for simulator-tools
+      id: meta-simulator-tools
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/simulator-tools
+        tags: |
+          type=raw,value=simulator-tools-${{ inputs.platform }}
+          type=raw,value=simulator-tools-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-simulator-tools
+        flavor: |
+          latest=false
+
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
@@ -234,6 +246,7 @@ runs:
           ${{ steps.meta-universe-vehicle-system.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
+          ${{ steps.meta-simulator-tools.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}
