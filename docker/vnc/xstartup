@@ -1,0 +1,10 @@
+#!/bin/bash
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+export XKL_XMODMAP_DISABLE=1
+export DESKTOP_SESSION=LXDE
+export XDG_CURRENT_DESKTOP=LXDE
+startlxde &
+sleep 5
+rviz2 -d /opt/autoware/share/autoware_launch/rviz/autoware.rviz &
+sleep infinity

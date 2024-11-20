@@ -11,6 +11,7 @@ docker
 !docker/etc
 !docker/scripts
 !docker/simulator-tools
+!docker/vnc
 
 # Ignore a part of files under src
 src/**/.*

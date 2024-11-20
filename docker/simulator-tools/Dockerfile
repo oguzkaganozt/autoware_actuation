@@ -1,6 +1,6 @@
 # Install all RViz plugins from autoware.universe
 # Install all message types of autoware.universe
-FROM ghcr.io/autowarefoundation/autoware:universe-devel AS simulator-tools
+FROM ghcr.io/autowarefoundation/autoware:universe-devel AS builder
 WORKDIR /autoware
 
 # Copy scenario_simulator and pull external dependencies
@@ -11,26 +11,37 @@ RUN mkdir -p src/simulator/scenario_simulator/external \
 # Install rosdep dependencies
 RUN --mount=type=ssh \
   apt-get update \
-  && apt-get install -y curl unzip \
   && rosdep update \
   && rosdep install -y --from-paths src --ignore-src --dependency-types=exec --rosdistro $ROS_DISTRO \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 # Build simulator
-RUN source /opt/ros/"$ROS_DISTRO"/setup.bash \
-  && source /opt/autoware/setup.bash \
-  && colcon build --cmake-args \
-  " -Wno-dev" \
-  " --no-warn-unused-cli" \
-  --install-base /opt/autoware \
-  --merge-install \
-  --mixin release compile-commands ccache \
-  --packages-skip-regex ".*autoware.*" \
-  && rm -rf build/ install/ log/
+# RUN source /opt/ros/"$ROS_DISTRO"/setup.bash \
+#   && source /opt/autoware/setup.bash \
+#   && colcon build --cmake-args \
+#   " -Wno-dev" \
+#   " --no-warn-unused-cli" \
+#   --install-base /opt/autoware \
+#   --merge-install \
+#   --mixin release compile-commands ccache \
+#   --packages-skip-regex ".*autoware.*" \
+#   && rm -rf build/ install/ log/
 
 RUN find /opt/autoware/lib -type f -name "*.py" -exec chmod +x {} \;
 RUN find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \;
-CMD ["/bin/bash"]
+
+FROM ghcr.io/autowarefoundation/autoware:universe as simulator-tools
+
+COPY --from=builder /opt/autoware /opt/autoware
+COPY --from=builder /autoware /autoware
+
+# Install rosdep dependencies
+RUN --mount=type=ssh \
+  apt-get update \
+  && apt-get install -y curl unzip \
+  && rosdep update \
+  && rosdep install -y --from-paths src --ignore-src --dependency-types=exec --rosdistro $ROS_DISTRO \
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 # # # Install VNC server with NoVNC
 # RUN apt-get update && apt-get install -y \
