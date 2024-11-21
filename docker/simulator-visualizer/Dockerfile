@@ -72,6 +72,13 @@ RUN openssl req -x509 -nodes -newkey rsa:2048 \
     -days 365 \
     -subj "/O=Autoware-OpenADKit/CN=localhost"
 
+# Install ngrok
+RUN curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | \
+  gpg --dearmor -o /etc/apt/keyrings/ngrok.gpg && \
+  echo "deb [signed-by=/etc/apt/keyrings/ngrok.gpg] https://ngrok-agent.s3.amazonaws.com buster main" | \
+  tee /etc/apt/sources.list.d/ngrok.list && \
+  apt update && apt install ngrok
+
 # Need to expose VNC and NoVNC ports when running the container
 EXPOSE 5900 6080
 

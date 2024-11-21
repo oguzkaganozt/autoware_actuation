@@ -246,7 +246,7 @@ runs:
           ${{ steps.meta-universe-vehicle-system.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
-          ${{ steps.meta-simulator-tools.outputs.bake-file }}
+          ${{ steps.meta-simulator-visualizer.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}
