@@ -18,6 +18,12 @@ sleep 2
 # Start NoVNC
 websockify --web=/usr/share/novnc/ --cert=/etc/ssl/certs/novnc.crt --key=/etc/ssl/private/novnc.key 6080 localhost:5901 & > /dev/null 2>&1
 
+# Configure ngrok
+ngrok config add-authtoken $NGROK_AUTH_TOKEN
+
+# Start ngrok tunnel
+ngrok tcp 6080 --url=simviz.openadkit.ngrok.app
+
 # Print message
 echo -e "\033[32m-------------------------------------------------------------------------\033[0m"
 echo -e "\033[32mVNC server is running and accessible at localhost:5901\033[0m"

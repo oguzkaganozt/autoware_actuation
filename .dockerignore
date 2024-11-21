@@ -10,7 +10,7 @@
 docker
 !docker/etc
 !docker/scripts
-!docker/simulator-tools
+!docker/simulator-visualizer
 !docker/vnc
 
 # Ignore a part of files under src

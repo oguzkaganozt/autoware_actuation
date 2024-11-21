@@ -12,7 +12,7 @@ group "default" {
     "universe-vehicle-system",
     "universe-devel",
     "universe",
-    "simulator-tools"
+    "simulator-visualizer"
   ]
 }
 
@@ -29,7 +29,7 @@ target "docker-metadata-action-universe-vehicle-system-devel" {}
 target "docker-metadata-action-universe-vehicle-system" {}
 target "docker-metadata-action-universe-devel" {}
 target "docker-metadata-action-universe" {}
-target "docker-metadata-action-simulator-tools" {}
+target "docker-metadata-action-simulator-visualizer" {}
 target "base" {
   inherits = ["docker-metadata-action-base"]
   dockerfile = "docker/Dockerfile"
@@ -102,8 +102,8 @@ target "universe" {
   target = "universe"
 }
 
-target "simulator-tools" {
-  inherits = ["docker-metadata-action-simulator-tools"]
-  dockerfile = "docker/simulator-tools/Dockerfile"
-  target = "simulator-tools"
+target "simulator-visualizer" {
+  inherits = ["docker-metadata-action-simulator-visualizer"]
+  dockerfile = "docker/simulator-visualizer/Dockerfile"
+  target = "simulator-visualizer"
 }
