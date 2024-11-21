@@ -30,7 +30,7 @@ RUN openssl req -x509 -nodes -newkey rsa:2048 \
     -days 365 \
     -subj "/O=Autoware-OpenADKit/CN=localhost"
 
-# Expose VNC and NoVNC ports
+# Need to expose VNC and NoVNC ports when running the container
 EXPOSE 5900 6080
 
 # Copy entrypoint script

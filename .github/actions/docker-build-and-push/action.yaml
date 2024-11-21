@@ -209,15 +209,15 @@ runs:
         flavor: |
           latest=auto
 
-    - name: Docker meta for simulator-tools
-      id: meta-simulator-tools
+    - name: Docker meta for simulator-visualizer
+      id: meta-simulator-visualizer
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/simulator-tools
+        images: ghcr.io/${{ github.repository_owner }}/simulator-visualizer
         tags: |
-          type=raw,value=simulator-tools-${{ inputs.platform }}
-          type=raw,value=simulator-tools-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        bake-target: docker-metadata-action-simulator-tools
+          type=raw,value=simulator-visualizer-${{ inputs.platform }}
+          type=raw,value=simulator-visualizer-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-simulator-visualizer
         flavor: |
           latest=false
 
