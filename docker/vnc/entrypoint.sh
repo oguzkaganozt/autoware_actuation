@@ -5,7 +5,7 @@ source "/opt/ros/$ROS_DISTRO/setup.bash"
 source /opt/autoware/setup.bash
 
 # Start VNC server
-vncserver :1 -auth $HOME/.Xauthority -geometry 1024x768 -depth 16 -pixelformat rgb565 > /dev/null 2>&1
+vncserver :1 -auth $HOME/.Xauthority -geometry 1024x768 -depth 16 -pixelformat rgb565 >/dev/null 2>&1
 VNC_RESULT=$?
 
 if [ $VNC_RESULT -ne 0 ]; then
@@ -24,7 +24,7 @@ if [ -n "$NGROK_AUTHTOKEN" ]; then
     ngrok config add-authtoken $NGROK_AUTHTOKEN
 
     # Start ngrok tunnel for NoVNC
-    ngrok http --url=$NGROK_URL 6080 --log=stdout > ngrok.log &
+    ngrok http --url=$NGROK_URL 6080 --log=stdout >ngrok.log &
 
     NOVNC_URL=https://$NGROK_URL
 fi
