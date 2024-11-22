@@ -20,7 +20,7 @@ websockify --daemon --web=/usr/share/novnc/ --cert=/etc/ssl/certs/novnc.crt --ke
 
 NOVNC_URL="localhost:6080"
 # Configure ngrok if NGROK_AUTHTOKEN is set
-if [ -n "$NGROK_AUTHTOKEN" ]; then
+if [ -n "$NGROK_AUTHTOKEN" ] && [ -n "$NGROK_URL" ]; then
     ngrok config add-authtoken $NGROK_AUTHTOKEN
 
     # Start ngrok tunnel for NoVNC
