@@ -46,7 +46,7 @@ jobs:
         uses: ./.github/actions/docker-build-and-push
         with:
           platform: amd64
-          target-image: autoware
+          target-image: autoware_snapshots
           build-args: |
             *.platform=linux/amd64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
@@ -61,52 +61,52 @@ jobs:
         run: |
           df -h
 
-  docker-build-and-push-cuda:
-    needs: [load-env, docker-build-and-push]
-    runs-on: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-large
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+  # docker-build-and-push-cuda:
+  #   needs: [load-env, docker-build-and-push]
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - name: Check out repository
+  #       uses: actions/checkout@v4
 
-      - name: Set git config
-        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Set git config
+  #       uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+  #       with:
+  #         token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
+  #     - name: Free disk space
+  #       uses: ./.github/actions/free-disk-space
 
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v45
-        with:
-          files: |
-            *.env
-            *.repos
-            .github/actions/docker-build-and-push/action.yaml
-            .github/workflows/docker-build-and-push*.yaml
-            ansible-galaxy-requirements.yaml
-            ansible/**
-            docker/**
+  #     - name: Get changed files
+  #       id: changed-files
+  #       uses: tj-actions/changed-files@v45
+  #       with:
+  #         files: |
+  #           *.env
+  #           *.repos
+  #           .github/actions/docker-build-and-push/action.yaml
+  #           .github/workflows/docker-build-and-push*.yaml
+  #           ansible-galaxy-requirements.yaml
+  #           ansible/**
+  #           docker/**
 
-      - name: Build 'Autoware' with CUDA
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' && github.ref_type == 'tag') }}
-        uses: ./.github/actions/docker-build-and-push-cuda
-        with:
-          platform: amd64
-          target-image: autoware
-          build-args: |
-            *.platform=linux/amd64
-            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
-            *.args.LIB_DIR=x86_64
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }},mode=max
+  #     - name: Build 'Autoware' with CUDA
+  #       if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+  #         github.event_name == 'workflow_dispatch' ||
+  #         (github.event_name == 'push' && github.ref_type == 'tag') }}
+  #       uses: ./.github/actions/docker-build-and-push-cuda
+  #       with:
+  #         platform: amd64
+  #         target-image: autoware
+  #         build-args: |
+  #           *.platform=linux/amd64
+  #           *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+  #           *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
+  #           *.args.LIB_DIR=x86_64
+  #           *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }}
+  #           *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-main
+  #           *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }},mode=max
 
-      - name: Show disk space
-        if: always()
-        run: |
-          df -h
+  #     - name: Show disk space
+  #       if: always()
+  #       run: |
+  #         df -h
