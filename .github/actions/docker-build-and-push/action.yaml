@@ -226,7 +226,7 @@ runs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ github.token }}
 
     - name: Build and Push to GitHub Container Registry
       uses: docker/bake-action@v5
@@ -247,6 +247,5 @@ runs:
           ${{ steps.meta-universe-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
           ${{ steps.meta-simulator-visualizer.outputs.bake-file }}
-        provenance: false
         set: |
           ${{ inputs.build-args }}
