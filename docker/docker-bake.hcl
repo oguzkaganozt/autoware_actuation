@@ -1,9 +1,5 @@
 group "default" {
   targets = [
-    "base",
-    "core-devel",
-    "universe-devel",
-    "universe",
     "simulator-visualizer"
   ]
 }
