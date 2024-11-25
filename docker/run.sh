@@ -46,12 +46,12 @@ parse_arguments() {
 # Run simulation
 run_simulation() {
     if [ "$option_web" = "true" ]; then
+        xhost +
         docker compose -f "${SCRIPT_DIR}/web-simulation.docker-compose.yaml" up
     else
         docker compose -f "${SCRIPT_DIR}/local-simulation.docker-compose.yaml" up
     fi
 }
 
-xhost +
 parse_arguments "$@"
 run_simulation
