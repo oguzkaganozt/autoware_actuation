@@ -85,5 +85,4 @@ EXPOSE 5900 6080
 # Copy entrypoint script
 COPY docker/etc/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-
 ENTRYPOINT ["/entrypoint.sh"]
