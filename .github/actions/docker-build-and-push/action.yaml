@@ -77,6 +77,30 @@ runs:
         flavor: |
           latest=false
 
+    - name: Docker meta for planning-control-fail
+      id: meta-planning-control-fail
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=planning-control-fail-${{ inputs.platform }}
+          type=raw,value=planning-control-fail-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-planning-control-fail
+        flavor: |
+          latest=false
+      
+    - name: Docker meta for planning-control-pass
+      id: meta-planning-control-pass
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=planning-control-pass-${{ inputs.platform }}
+          type=raw,value=planning-control-pass-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-planning-control-pass
+        flavor: |
+          latest=false
+
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
@@ -91,5 +115,7 @@ runs:
         files: |
           docker/docker-bake.hcl
           ${{ steps.meta-simulator-visualizer.outputs.bake-file }}
+          ${{ steps.meta-planning-control-fail.outputs.bake-file }}
+          ${{ steps.meta-planning-control-pass.outputs.bake-file }}
         set: |
           ${{ inputs.build-args }}

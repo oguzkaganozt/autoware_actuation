@@ -46,7 +46,7 @@ jobs:
         uses: ./.github/actions/docker-build-and-push
         with:
           platform: amd64
-          target-image: autoware_snapshots
+          target-image: demo_packages
           build-args: |
             *.platform=linux/amd64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}

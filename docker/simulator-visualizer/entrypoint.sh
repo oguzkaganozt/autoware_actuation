@@ -6,7 +6,7 @@ source /opt/autoware/setup.bash
 
 # Start VNC server
 echo "Starting VNC server..."
-vncserver :14 -auth $HOME/.Xauthority -geometry 1024x768 -depth 16 -pixelformat rgb565 >/dev/null 2>&1
+vncserver :1 -auth $HOME/.Xauthority -geometry 1024x768 -depth 16 -pixelformat rgb565 >/dev/null 2>&1
 VNC_RESULT=$?
 
 if [ $VNC_RESULT -ne 0 ]; then
@@ -34,6 +34,9 @@ if [ -n "$NGROK_AUTHTOKEN" ]; then
 
     NOVNC_URL=https://$NGROK_URL
 fi
+
+# Start Rviz
+rviz2 -d /autoware/simulation/scenario_simulator.rviz
 
 # Print message
 echo -e "\033[32m-------------------------------------------------------------------------\033[0m"
