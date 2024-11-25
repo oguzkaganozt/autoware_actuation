@@ -41,7 +41,7 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 # Install VNC server with NoVNC
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     curl \
     unzip \
     lxde \
