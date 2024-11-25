@@ -13,7 +13,7 @@ jobs:
 
   docker-build-and-push:
     needs: load-env
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: buildjet-8vcpu-ubuntu-2204
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
