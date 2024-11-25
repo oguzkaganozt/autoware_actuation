@@ -60,7 +60,7 @@ RUN mkdir -p ~/.vnc && \
 
 # Copy xstartup script
 RUN mkdir -p /root/.vnc
-COPY docker/vnc/xstartup /root/.vnc/xstartup
+COPY docker/simulator-visualizer/xstartup /root/.vnc/xstartup
 
 # Set permissions for xstartup script
 RUN chmod +x /root/.vnc/xstartup
@@ -83,7 +83,7 @@ RUN curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | \
 EXPOSE 5900 6080
 
 # Copy entrypoint script
-COPY docker/vnc/entrypoint.sh /entrypoint.sh
+COPY docker/simulator-visualizer/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
