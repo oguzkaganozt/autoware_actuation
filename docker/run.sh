@@ -52,5 +52,6 @@ run_simulation() {
     fi
 }
 
+xhost +
 parse_arguments "$@"
 run_simulation
