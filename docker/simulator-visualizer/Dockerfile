@@ -83,7 +83,7 @@ RUN curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | \
 EXPOSE 5900 6080
 
 # Copy entrypoint script
-COPY docker/simulator-visualizer/entrypoint.sh /entrypoint.sh
+COPY docker/etc/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
