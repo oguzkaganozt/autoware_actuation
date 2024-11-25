@@ -2,14 +2,6 @@ group "default" {
   targets = [
     "base",
     "core-devel",
-    "universe-sensing-perception-devel",
-    "universe-sensing-perception",
-    "universe-localization-mapping-devel",
-    "universe-localization-mapping",
-    "universe-planning-control-devel",
-    "universe-planning-control",
-    "universe-vehicle-system-devel",
-    "universe-vehicle-system",
     "universe-devel",
     "universe",
     "simulator-visualizer"
