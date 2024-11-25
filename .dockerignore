@@ -11,6 +11,7 @@ docker
 !docker/etc
 !docker/scripts
 !docker/simulator-visualizer
+!docker/planning-control
 
 # Ignore a part of files under src
 src/**/.*
