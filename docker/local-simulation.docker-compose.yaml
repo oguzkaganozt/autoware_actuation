@@ -12,7 +12,6 @@ services:
       - ROS_DOMAIN_ID=88
       - DISPLAY=${DISPLAY}
       - VNC_ENABLED=false
-      - LAUNCH_RVIZ=true
     command: >-
       ros2 launch 
       scenario_test_runner 

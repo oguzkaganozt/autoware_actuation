@@ -46,10 +46,5 @@ if [ "$VNC_ENABLED" = "true" ]; then
     echo -e "\033[32m-------------------------------------------------------------------------\033[0m"
 fi
 
-if [ "$LAUNCH_RVIZ" = "true" ]; then
-    # Start Rviz
-    rviz2 -d /autoware/simulation/scenario_simulator.rviz
-fi
-
 # Run command
 exec "$@"
