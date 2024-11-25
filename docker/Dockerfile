@@ -36,7 +36,6 @@ RUN --mount=type=ssh \
 # Create entrypoint
 COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
-ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
 FROM base AS base-cuda
@@ -115,7 +114,7 @@ ARG ROS_DISTRO
 COPY src/universe/autoware.universe/control /autoware/src/universe/autoware.universe/control
 COPY src/universe/autoware.universe/planning /autoware/src/universe/autoware.universe/planning
 # TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
-COPY src/universe/autoware.universe/map/map_loader /autoware/src/universe/autoware.universe/map/map_loader
+COPY src/universe/autoware.universe/map/autoware_map_loader /autoware/src/universe/autoware.universe/map/autoware_map_loader
 COPY src/universe/autoware.universe/map/autoware_map_projection_loader /autoware/src/universe/autoware.universe/map/autoware_map_projection_loader
 COPY src/universe/autoware.universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions
 COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
@@ -222,7 +221,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Set up CUDA development environment
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module all --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-cuda-drivers openadkit \
   && pip uninstall -y ansible ansible-core \
   && /autoware/cleanup_apt.sh true
 
@@ -268,25 +267,15 @@ RUN --mount=type=ssh \
   && cat /tmp/rosdep-universe-sensing-perception-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_apt.sh
 
+COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
+
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  # TODO(youtalk): Move CUDA related packages into a dedicated directory
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_bytetrack,target=/autoware/src/universe/autoware.universe/perception/autoware_bytetrack \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_lidar_apollo_instance_segmentation,target=/autoware/src/universe/autoware.universe/perception/autoware_lidar_apollo_instance_segmentation \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_lidar_centerpoint,target=/autoware/src/universe/autoware.universe/perception/autoware_lidar_centerpoint \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_lidar_transfusion,target=/autoware/src/universe/autoware.universe/perception/autoware_lidar_transfusion \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_shape_estimation,target=/autoware/src/universe/autoware.universe/perception/autoware_shape_estimation \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_classifier,target=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_classifier \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_common,target=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_common \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_yolox,target=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_yolox \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_classifier,target=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_classifier \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_fine_detector,target=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_fine_detector \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_cuda_utils,target=/autoware/src/universe/autoware.universe/sensing/autoware_cuda_utils \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception,target=/autoware/src/universe/autoware.universe/perception \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/sensing,target=/autoware/src/universe/autoware.universe/sensing \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
-
-COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware "--packages-above-and-dependencies autoware_tensorrt_common"
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -332,7 +321,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/control,target=/autoware/src/universe/autoware.universe/control \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/planning,target=/autoware/src/universe/autoware.universe/planning \
   # TODO(youtalk): Remove --mount options when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
-  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/map_loader,target=/autoware/src/universe/autoware.universe/map/map_loader \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_loader,target=/autoware/src/universe/autoware.universe/map/autoware_map_loader \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader,target=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions,target=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor \
