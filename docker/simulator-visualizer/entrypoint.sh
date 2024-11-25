@@ -5,7 +5,8 @@ source "/opt/ros/$ROS_DISTRO/setup.bash"
 source /opt/autoware/setup.bash
 
 # Start VNC server
-vncserver :1 -auth $HOME/.Xauthority -geometry 1024x768 -depth 16 -pixelformat rgb565 >/dev/null 2>&1
+echo "Starting VNC server..."
+vncserver :14 -auth $HOME/.Xauthority -geometry 1024x768 -depth 16 -pixelformat rgb565 >/dev/null 2>&1
 VNC_RESULT=$?
 
 if [ $VNC_RESULT -ne 0 ]; then
@@ -16,11 +17,16 @@ fi
 sleep 2
 
 # Start NoVNC
+echo "Starting NoVNC..."
 websockify --daemon --web=/usr/share/novnc/ --cert=/etc/ssl/certs/novnc.crt --key=/etc/ssl/private/novnc.key 6080 localhost:5901
 
-NOVNC_URL="localhost:6080"
+# Get local IP address (works on Linux)
+LOCAL_IP=$(hostname -I | awk '{print $1}')
+NOVNC_URL="${LOCAL_IP}:6080"
+
 # Configure ngrok if NGROK_AUTHTOKEN is set
 if [ -n "$NGROK_AUTHTOKEN" ]; then
+    echo "Starting ngrok..."
     ngrok config add-authtoken $NGROK_AUTHTOKEN
 
     # Start ngrok tunnel for NoVNC

@@ -1,0 +1,51 @@
+services:
+  simulator:
+    image: ghcr.io/oguzkaganozt/simulator-visualizer:latest
+    network_mode: "host"
+    volumes:
+      - /dev/shm:/dev/shm
+      - /etc/localtime:/etc/localtime:ro
+      - ./etc/map:/autoware/map
+      - ./etc/simulation:/autoware/simulation
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    environment:
+      - ROS_DOMAIN_ID=88
+      - NGROK_AUTHTOKEN=2guulYxBHQKJpe37Qp4PexfzXQm_3HSWKfiUgtKyxKmz2PJBo
+      - NGROK_URL=simviz.openadkit.ngrok.app
+      - DISPLAY=${DISPLAY}
+      - XAUTHORITY=/home/user/.Xauthority
+    command: >-
+      ros2 launch 
+      scenario_test_runner 
+      scenario_test_runner.launch.py 
+      architecture_type:=awf/universe/20240605 
+      record:=false 
+      sensor_model:=sample_sensor_kit 
+      vehicle_model:=sample_vehicle 
+      scenario:=/autoware/simulation/yield_maneuver_demo.yaml 
+      map_path:=/autoware/map 
+      global_timeout:=240 
+      initialize_duration:=90 
+      launch_autoware:=false 
+      launch_rviz:=true
+
+  planning-control:
+    image: ghcr.io/autowarefoundation/autoware:universe
+    network_mode: "host"
+    volumes:
+      - /dev/shm:/dev/shm
+      - /etc/localtime:/etc/localtime:ro
+      - ./etc/map:/autoware/map
+    environment:
+      - ROS_DOMAIN_ID=88
+    command: >-
+      ros2 launch 
+      autoware_launch 
+      planning_simulator.launch.xml 
+      scenario_simulation:=true 
+      vehicle_model:=sample_vehicle 
+      sensor_model:=sample_sensor_kit 
+      map_path:=/autoware/map  
+      use_foa:=false 
+      perception/enable_traffic_light:=false 
+      rviz:=false
