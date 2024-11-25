@@ -1,6 +1,6 @@
 services:
   simulator:
-    image: ghcr.io/oguzkaganozt/simulator-visualizer:latest
+    image: ghcr.io/autowarefoundation/openadkit_demo.autoware:simulator-visualizer
     network_mode: "host"
     volumes:
       - /dev/shm:/dev/shm
