@@ -1,4 +1,4 @@
-FROM ghcr.io/autowarefoundation/autoware:universe-devel-20240927 AS builder
+FROM ghcr.io/autowarefoundation/autoware:universe-devel-20240927-arm64 AS builder
 WORKDIR /autoware
 
 # Copy scenario_simulator and pull external dependencies
@@ -28,7 +28,7 @@ RUN source /opt/ros/"$ROS_DISTRO"/setup.bash \
 RUN find /opt/autoware/lib -type f -name "*.py" -exec chmod +x {} \;
 RUN find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \;
 
-FROM ghcr.io/autowarefoundation/autoware:universe-20240927 as simulator-visualizer
+FROM ghcr.io/autowarefoundation/autoware:universe-20240927-arm64 as simulator-visualizer
 
 COPY --from=builder /opt/autoware /opt/autoware
 COPY --from=builder /autoware /autoware
