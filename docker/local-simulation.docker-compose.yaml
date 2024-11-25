@@ -12,6 +12,7 @@ services:
       - ROS_DOMAIN_ID=88
       - DISPLAY=${DISPLAY}
       - VNC_ENABLED=false
+      - LAUNCH_RVIZ=true
     command: >-
       ros2 launch 
       scenario_test_runner 
@@ -24,26 +25,26 @@ services:
       map_path:=/autoware/map 
       global_timeout:=240 
       initialize_duration:=90 
-      launch_autoware:=true 
-      launch_rviz:=true
+      launch_autoware:=false 
+      launch_rviz:=false
 
-  # planning-control:
-  #   image: ghcr.io/autowarefoundation/demo_packages:planning-control-pass-amd64
-  #   network_mode: "host"
-  #   volumes:
-  #     - /dev/shm:/dev/shm
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - ./etc/map:/autoware/map
-  #   environment:
-  #     - ROS_DOMAIN_ID=88
-  #   command: >-
-  #     ros2 launch 
-  #     autoware_launch 
-  #     planning_simulator.launch.xml 
-  #     scenario_simulation:=true 
-  #     vehicle_model:=sample_vehicle 
-  #     sensor_model:=sample_sensor_kit 
-  #     map_path:=/autoware/map  
-  #     use_foa:=false 
-  #     perception/enable_traffic_light:=false 
-  #     rviz:=false
+  planning-control:
+    image: ghcr.io/autowarefoundation/demo_packages:planning-control-pass-amd64
+    network_mode: "host"
+    volumes:
+      - /dev/shm:/dev/shm
+      - /etc/localtime:/etc/localtime:ro
+      - ./etc/map:/autoware/map
+    environment:
+      - ROS_DOMAIN_ID=88
+    command: >-
+      ros2 launch 
+      autoware_launch 
+      planning_simulator.launch.xml 
+      scenario_simulation:=true 
+      vehicle_model:=sample_vehicle 
+      sensor_model:=sample_sensor_kit 
+      map_path:=/autoware/map  
+      use_foa:=false 
+      perception/enable_traffic_light:=false 
+      rviz:=false

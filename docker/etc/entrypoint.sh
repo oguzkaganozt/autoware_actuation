@@ -38,15 +38,17 @@ if [ "$VNC_ENABLED" = "true" ]; then
         NOVNC_URL=https://$NGROK_URL
     fi
 
-    # Start Rviz
-    rviz2 -d /autoware/simulation/scenario_simulator.rviz
-
     # Print message
     echo -e "\033[32m-------------------------------------------------------------------------\033[0m"
     echo -e "Note: In order to access VNC and NoVNC on localhost, you need to expose ports 5901 and 6080 to the outside world respectively."
     echo -e "\033[32mVNC server is running and accessible at localhost:5901 via VNC viewer\033[0m"
     echo -e "\033[32mNoVNC web interface available at $NOVNC_URL/vnc.html via web browser\033[0m"
     echo -e "\033[32m-------------------------------------------------------------------------\033[0m"
+fi
+
+if [ "$LAUNCH_RVIZ" = "true" ]; then
+    # Start Rviz
+    rviz2 -d /autoware/simulation/scenario_simulator.rviz
 fi
 
 # Run command

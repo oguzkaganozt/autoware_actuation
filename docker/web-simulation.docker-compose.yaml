@@ -1,6 +1,6 @@
 services:
   simulator:
-    image: ghcr.io/autowarefoundation/autoware_snapshots:simulator-visualizer-amd64
+    image: ghcr.io/autowarefoundation/demo_packages:simulator-visualizer-amd64
     network_mode: "host"
     volumes:
       - /dev/shm:/dev/shm
@@ -12,6 +12,7 @@ services:
       - NGROK_AUTHTOKEN=2guulYxBHQKJpe37Qp4PexfzXQm_3HSWKfiUgtKyxKmz2PJBo
       - NGROK_URL=simviz.openadkit.ngrok.app
       - VNC_ENABLED=true
+      - LAUNCH_RVIZ=true
     command: >-
       ros2 launch 
       scenario_test_runner 
@@ -25,10 +26,10 @@ services:
       global_timeout:=240 
       initialize_duration:=90 
       launch_autoware:=false 
-      launch_rviz:=true
+      launch_rviz:=false
 
   planning-control:
-    image: ghcr.io/autowarefoundation/autoware:universe
+    image: ghcr.io/autowarefoundation/demo_packages:planning-control-pass-amd64
     network_mode: "host"
     volumes:
       - /dev/shm:/dev/shm
