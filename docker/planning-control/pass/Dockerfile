@@ -1,4 +1,5 @@
-FROM ghcr.io/autowarefoundation/autoware:universe-20240927-arm64 AS planning-control-pass
+ARG ARCH
+FROM ghcr.io/autowarefoundation/autoware:universe-20240927-${ARCH} AS planning-control-pass
 
 # Copy config file
 COPY docker/planning-control/pass/pass.config.yaml /opt/autoware/share/autoware_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/autoware_behavior_path_static_obstacle_avoidance_module/static_obstacle_avoidance.param.yaml

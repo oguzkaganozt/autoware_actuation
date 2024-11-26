@@ -1,6 +1,6 @@
 services:
   simulator:
-    image: ghcr.io/autowarefoundation/demo_packages:simulator-visualizer-arm64
+    image: ghcr.io/autowarefoundation/demo_packages:simulator-visualizer-${ARCH}
     network_mode: "host"
     volumes:
       - /dev/shm:/dev/shm
@@ -28,7 +28,7 @@ services:
       launch_rviz:=false
 
   planning-control:
-    image: ghcr.io/autowarefoundation/demo_packages:planning-control-pass-arm64
+    image: ghcr.io/autowarefoundation/demo_packages:planning-control-pass-${ARCH}
     network_mode: "host"
     volumes:
       - /dev/shm:/dev/shm

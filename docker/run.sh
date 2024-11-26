@@ -19,6 +19,7 @@ print_help() {
     echo "  --help          Display this help message"
     echo "  -h              Display this help message"
     echo "  --web           Run web simulation"
+    echo "  --platform      Target platform (amd64, arm64)"
     echo ""
 }
 
@@ -33,6 +34,9 @@ parse_arguments() {
         --web)
             option_web=true
             ;;
+        --platform)
+            option_platform="$2"
+            ;;
         *)
             echo "Unknown option: $1"
             print_help
@@ -41,6 +45,24 @@ parse_arguments() {
         esac
         shift
     done
+}
+
+# Set platform
+set_platform() {
+    if [ -n "$option_platform" ]; then
+        platform="$option_platform"
+    else
+        platform="linux/amd64"
+        arch="amd64"
+        if [ "$(uname -m)" = "aarch64" ]; then
+            platform="linux/arm64"
+            arch="arm64"
+        fi
+    fi
+
+    echo "Platform: ${platform}"
+    echo "Architecture: ${arch}"
+    export ARCH="${arch}"
 }
 
 # Run simulation
@@ -54,4 +76,5 @@ run_simulation() {
 }
 
 parse_arguments "$@"
+set_platform
 run_simulation

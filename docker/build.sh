@@ -18,6 +18,24 @@ clone_repositories() {
     fi
 }
 
+# Set platform
+set_platform() {
+    if [ -n "$option_platform" ]; then
+        platform="$option_platform"
+    else
+        platform="linux/amd64"
+        arch="amd64"
+        if [ "$(uname -m)" = "aarch64" ]; then
+            platform="linux/arm64"
+            arch="arm64"
+        fi
+    fi
+
+    echo "Platform: ${platform}"
+    echo "Architecture: ${arch}"
+    export ARCH="${arch}"
+}
+
 # Build images
 build_images() {
     # https://github.com/docker/buildx/issues/484
@@ -31,9 +49,10 @@ build_images() {
         --set "*.context=$WORKSPACE_ROOT" \
         --set "*.ssh=default" \
         --set "*.platform=$platform" \
-        --set "simulator-visualizer.tags=ghcr.io/autowarefoundation/openadkit.autoware:simulator-visualizer" \
-        --set "planning-control-fail.tags=ghcr.io/autowarefoundation/openadkit.autoware:planning-control-fail" \
-        --set "planning-control-pass.tags=ghcr.io/autowarefoundation/openadkit.autoware:planning-control-pass" \
+        --set "*.args.ARCH=${arch}" \
+        --set "simulator-visualizer.tags=ghcr.io/autowarefoundation/openadkit.autoware:simulator-visualizer-${arch}" \
+        --set "planning-control-fail.tags=ghcr.io/autowarefoundation/openadkit.autoware:planning-control-fail-${arch}" \
+        --set "planning-control-pass.tags=ghcr.io/autowarefoundation/openadkit.autoware:planning-control-pass-${arch}" \
         "${targets[@]}"
     set +x
 }
