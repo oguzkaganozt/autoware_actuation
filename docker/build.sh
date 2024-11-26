@@ -25,6 +25,7 @@ parse_arguments() {
             ;;
         --platform)
             option_platform="$2"
+            shift
             ;;
         *)
             echo "Unknown option: $1"

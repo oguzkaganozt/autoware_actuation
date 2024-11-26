@@ -1,0 +1,79 @@
+services:
+  simulator:
+    image: ghcr.io/autowarefoundation/demo_packages:simulator-visualizer-${ARCH}
+    container_name: simulator
+    network_mode: "host"
+    volumes:
+      - /dev/shm:/dev/shm
+      - /etc/localtime:/etc/localtime:ro
+      - $SIMULATOR_HOME/map:/autoware/map
+      - $SIMULATOR_HOME/simulation:/autoware/simulation
+    environment:
+      - ROS_DOMAIN_ID=88
+    command: >-
+      ros2 launch 
+      scenario_test_runner 
+      scenario_test_runner.launch.py 
+      architecture_type:=awf/universe/20240605 
+      record:=false 
+      sensor_model:=sample_sensor_kit 
+      vehicle_model:=sample_vehicle
+      scenario:=/autoware/simulation/yield_maneuver_demo.yaml
+      map_path:=/autoware/map
+      global_timeout:=240
+      initialize_duration:=90
+      launch_autoware:=false
+      launch_rviz:=false
+
+  planning-control:
+    image: ghcr.io/autowarefoundation/demo_packages:planning-control-pass-${ARCH}
+    container_name: planning-control
+    network_mode: "host"
+    volumes:
+      - /dev/shm:/dev/shm
+      - /etc/localtime:/etc/localtime:ro
+      - $SIMULATOR_HOME/map:/autoware/map
+    environment:
+      - ROS_DOMAIN_ID=88
+    command: >-
+      ros2 launch 
+      autoware_launch 
+      planning_simulator.launch.xml 
+      scenario_simulation:=true 
+      vehicle_model:=sample_vehicle 
+      sensor_model:=sample_sensor_kit 
+      map_path:=/autoware/map  
+      use_foa:=false 
+      perception/enable_traffic_light:=false 
+      rviz:=false
+
+  local-visualizer:
+    image: ghcr.io/autowarefoundation/demo_packages:simulator-visualizer-${ARCH}
+    container_name: local-visualizer
+    network_mode: "host"
+    volumes:
+      - /dev/shm:/dev/shm
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - $SIMULATOR_HOME/simulation:/autoware/simulation
+    environment:
+      - ROS_DOMAIN_ID=88
+      - DISPLAY=${DISPLAY}
+    command: >-
+      rviz2 -d /autoware/simulation/scenario_simulator.rviz
+
+  web-visualizer:
+    image: ghcr.io/autowarefoundation/demo_packages:simulator-visualizer-${ARCH}
+    container_name: web-visualizer
+    network_mode: "host"
+    volumes:
+      - /dev/shm:/dev/shm
+      - /etc/localtime:/etc/localtime:ro
+      - $SIMULATOR_HOME/simulation:/autoware/simulation
+    environment:
+      - ROS_DOMAIN_ID=88
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+      - NGROK_URL=${NGROK_URL}
+      - VNC_ENABLED=true
+    command: >-
+      sleep infinity
