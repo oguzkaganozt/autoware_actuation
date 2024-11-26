@@ -38,7 +38,7 @@ parse_arguments() {
 
 # Clone repositories
 clone_repositories() {
-    pip3 install -y vcstool
+    pip3 install vcstool
     cd "$WORKSPACE_ROOT"
     if [ ! -d "src" ]; then
         mkdir -p src
