@@ -5,8 +5,40 @@ set -e
 SCRIPT_DIR=$(readlink -f "$(dirname "$0")")
 WORKSPACE_ROOT="$SCRIPT_DIR/.."
 
+# Function to print help message
+print_help() {
+    echo "${GREEN}Usage: build.sh [OPTIONS]${NC}"
+    echo "Options:"
+    echo "  --help          Display this help message"
+    echo "  -h              Display this help message"
+    echo "  --platform      Target platform (one of linux/amd64, linux/arm64). By default it is the local architecture."
+    echo ""
+}
+
+# Parse arguments
+parse_arguments() {
+    while [ "$1" != "" ]; do
+        case "$1" in
+        --help | -h)
+            print_help
+            exit 1
+            ;;
+        --platform)
+            option_platform="$2"
+            ;;
+        *)
+            echo "Unknown option: $1"
+            print_help
+            exit 1
+            ;;
+        esac
+        shift
+    done
+}
+
 # Clone repositories
 clone_repositories() {
+    pip3 install -y vcstool
     cd "$WORKSPACE_ROOT"
     if [ ! -d "src" ]; then
         mkdir -p src
@@ -63,6 +95,8 @@ remove_dangling_images() {
 }
 
 # Main script execution
+parse_arguments "$@"
+set_platform
 clone_repositories
 build_images
 remove_dangling_images
