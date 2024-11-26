@@ -222,8 +222,8 @@ run_simulation() {
 
     # Wait for planning-control to start
     echo -e "${NC}Waiting for planning-control to start...${NC}"
-    for i in {1..50}; do
-        printf "\r[%-50s] %d%%" "$(printf '#%.0s' $(seq 1 $i))" $((i*100/50))
+    for i in {1..60}; do
+        printf "\r[%-60s] %d%%" "$(printf '#%.0s' $(seq 1 $i))" $((i*100/60))
         sleep 1
     done
     echo -e "\n${GREEN}Planning-control is ready!${NC}"
