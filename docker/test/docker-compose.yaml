@@ -1,0 +1,55 @@
+services:
+  talker:
+    image: ghcr.io/oguzkaganozt/autoware_snapshots:talker
+    container_name: talker-${RUN_ID}
+    hostname: talker-${RUN_ID}
+    environment:
+      - TS_AUTHKEY=tskey-auth-k5V9RQp1ft11CNTRL-ThTPeZTAjNibTav8odYjNiwimo6gFZUw
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+      - TS_HOSTNAME=talker-${RUN_ID}
+      - TS_ROUTES=10.0.0.0/8
+      - ROS_DOMAIN_ID=0
+      - ROS_LOCALHOST_ONLY=0
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      - RUN_ID=${RUN_ID}
+      - FASTRTPS_DEFAULT_PROFILES_FILE=/root/shared/fast.xml
+      - MSG_SIZE_MB=0.5
+      - MSG_FREQUENCY=1
+      # - TAILSCALE_TEST=true
+    volumes:
+      - /var/tmp/ts-authkey-test/talker:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+      - /etc/localtime:/etc/localtime:ro
+      - /var/tmp/fast.xml:/root/shared/fast.xml
+    cap_add:
+      - net_admin
+      - sys_module
+      - sys_admin
+  listener:
+    image: ghcr.io/oguzkaganozt/autoware_snapshots:listener
+    container_name: listener-${RUN_ID}
+    hostname: listener-${RUN_ID}
+    environment:
+      - TS_AUTHKEY=tskey-auth-k5V9RQp1ft11CNTRL-ThTPeZTAjNibTav8odYjNiwimo6gFZUw
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+      - TS_HOSTNAME=listener-${RUN_ID}
+      - TS_ROUTES=10.0.0.0/8
+      - ROS_DOMAIN_ID=0
+      - ROS_LOCALHOST_ONLY=0
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      - RUN_ID=${RUN_ID}
+      - FASTRTPS_DEFAULT_PROFILES_FILE=/root/shared/fast.xml
+      - MSG_SIZE_MB=0.5
+      - MSG_FREQUENCY=1
+      # - TAILSCALE_TEST=true
+    volumes:
+      - /var/tmp/ts-authkey-test/listener:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+      - /etc/localtime:/etc/localtime:ro
+      - /var/tmp/fast.xml:/root/shared/fast.xml
+    cap_add:
+      - net_admin
+      - sys_module
+      - sys_admin
