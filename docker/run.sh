@@ -96,14 +96,10 @@ set_architecture() {
 move_files_to_simulator_home() {
     cp -a "${WORKSPACE_ROOT}/docker/etc/map" $SIMULATOR_HOME
     cp -a "${WORKSPACE_ROOT}/docker/etc/simulation" $SIMULATOR_HOME
+    cp -a "${WORKSPACE_ROOT}/docker/etc/static_obstacle_avoidance.param.yaml.pass" $SIMULATOR_HOME
+    cp -a "${WORKSPACE_ROOT}/docker/etc/static_obstacle_avoidance.param.yaml.fail" $SIMULATOR_HOME
+    cp -a "${WORKSPACE_ROOT}/docker/etc/common.param.yaml" $SIMULATOR_HOME
     chmod -R a+rw $SIMULATOR_HOME/map $SIMULATOR_HOME/simulation
-}
-
-cleanup() {
-    echo -e "${BLUE}Cleaning up containers...${NC}"
-    docker ps -q --filter "name=planning-control" | xargs -r docker kill
-    docker ps -q --filter "name=web-visualizer" | xargs -r docker kill
-    docker ps -q --filter "name=simulator" | xargs -r docker kill
 }
 
 test_docker_remote_context() {
@@ -189,7 +185,78 @@ configure_remote_host() {
     echo "$remote_host" >> "$hosts_file"
 }
 
+run_visualizer() {
+    if [ "$1" = "web" ]; then
+        visualizer_container="web-visualizer"
+    else
+        visualizer_container="local-visualizer"
+        xhost +
+    fi
+    # Run visualizer    
+    echo -e "\n${NC}Starting ${visualizer_container}...${NC}"
+    docker compose -f "${SCRIPT_DIR}/simulation.docker-compose.yaml" --env-file "${SCRIPT_DIR}/etc/simulator.env" up ${visualizer_container} --remove-orphans --no-recreate -d
+
+    # Wait for web visualizer to start
+    echo -e "${NC}Waiting for ${visualizer_container} to start...${NC}"
+    for i in {1..3}; do
+        printf "\r[%-3s] %d%%" "$(printf '#%.0s' $(seq 1 $i))" $((i*100/3))
+        sleep 1
+    done
+
+    if [ "$1" = "web" ]; then
+        echo -e "\n${GREEN}${visualizer_container} is ready!${NC}"
+        echo -e "${GREEN}Access the visualizer at ${GREEN}https://${NGROK_URL}/vnc.html${NC}"
+        echo -e "${NC}----------------------------------------${NC}"
+    else
+        echo -e "\n${GREEN}${visualizer_container} is ready!${NC}"
+        echo -e "${NC}----------------------------------------${NC}"
+    fi
+}
+
 run_simulation() {
+    if [ "$1" = "fail" ]; then
+        export SIM_TIME=32
+        export PLANNING_CONTROL_NAME=planning-control-fail
+    else
+        export SIM_TIME=60
+        export PLANNING_CONTROL_NAME=planning-control-pass
+    fi
+
+    # Run simulation
+    echo -e "${BLUE}Running ${1} simulation...${NC}"
+    docker compose -f "${SCRIPT_DIR}/simulation.docker-compose.yaml" --env-file "${SCRIPT_DIR}/etc/simulator.env" up ${PLANNING_CONTROL_NAME} --remove-orphans -d
+
+    # Wait for planning-control to start
+    echo -e "${NC}Waiting for planning-control to start...${NC}"
+    for i in {1..60}; do
+        printf "\r[%-60s] %d%%" "$(printf '#%.0s' $(seq 1 $i))" $((i*100/60))
+        sleep 1
+    done
+    echo -e "\n${GREEN}Planning-control is ready!${NC}"
+    echo -e "${NC}----------------------------------------${NC}"
+
+    # Wait for simulator to start
+    echo -e "${NC}Waiting for simulator to start...${NC}"
+    for i in {1..4}; do
+        printf "\r[%-4s] %d%%" "$(printf '#%.0s' $(seq 1 $i))" $((i*100/4))
+        sleep 1
+    done
+    echo -e "\n${NC}Starting simulator...${NC}"
+    docker compose -f "${SCRIPT_DIR}/simulation.docker-compose.yaml" --env-file "${SCRIPT_DIR}/etc/simulator.env" up simulator --remove-orphans
+    # echo -e "\n${GREEN}Simulator is ready!${NC}"
+    echo -e "${NC}----------------------------------------${NC}"
+}
+
+cleanup() {
+    echo -e "${BLUE}Cleaning up containers...${NC}"
+    if [ "$1" = "all" ]; then
+        docker ps -q --filter "name=visualizer" | xargs -r docker rm -f || true
+    fi
+    docker ps -q --filter "name=planning-control" | xargs -r docker rm -f || true
+    docker ps -q --filter "name=simulator" | xargs -r docker rm -f || true
+}
+
+run() {
     trap cleanup SIGINT SIGTERM
 
     if [ -n "$remote_host" ]; then
@@ -214,51 +281,20 @@ run_simulation() {
     echo "SIMULATOR_HOME: ${SIMULATOR_HOME}"
 
     # Kill all running containers
-    cleanup
-
-    # Run simulation
-    echo -e "\n${NC}Starting planning-control...${NC}"
-    docker compose -f "${SCRIPT_DIR}/simulation.docker-compose.yaml" --env-file "${SCRIPT_DIR}/etc/simulator.env" up planning-control --remove-orphans -d
-
-    # Wait for planning-control to start
-    echo -e "${NC}Waiting for planning-control to start...${NC}"
-    for i in {1..60}; do
-        printf "\r[%-60s] %d%%" "$(printf '#%.0s' $(seq 1 $i))" $((i*100/60))
-        sleep 1
+    cleanup all
+    
+    # Infinite loop
+    while true; do
+        run_visualizer local
+        run_simulation fail
+        cleanup
+        run_simulation pass
+        cleanup
     done
-    echo -e "\n${GREEN}Planning-control is ready!${NC}"
-    echo -e "${NC}----------------------------------------${NC}"
-
-    # Run web visualizer    
-    echo -e "\n${NC}Starting web visualizer...${NC}"
-    docker compose -f "${SCRIPT_DIR}/simulation.docker-compose.yaml" --env-file "${SCRIPT_DIR}/etc/simulator.env" up web-visualizer --remove-orphans -d
-
-    # Wait for web visualizer to start
-    echo -e "${NC}Waiting for web visualizer to start...${NC}"
-    for i in {1..4}; do
-        printf "\r[%-4s] %d%%" "$(printf '#%.0s' $(seq 1 $i))" $((i*100/4))
-        sleep 1
-    done
-    echo -e "\n${GREEN}Web visualizer is ready!${NC}"
-    echo -e "${GREEN}Access the visualizer at ${GREEN}https://${NGROK_URL}/vnc.html${NC}"
-    echo -e "${NC}----------------------------------------${NC}"
-
-    # Wait for simulator to start
-    echo -e "${NC}Waiting for simulator to start...${NC}"
-    for i in {1..8}; do
-        printf "\r[%-8s] %d%%" "$(printf '#%.0s' $(seq 1 $i))" $((i*100/8))
-        sleep 1
-    done
-    echo -e "\n${NC}Starting simulator...${NC}"
-    docker compose -f "${SCRIPT_DIR}/simulation.docker-compose.yaml" --env-file "${SCRIPT_DIR}/etc/simulator.env" up simulator --remove-orphans
-    echo -e "\n${GREEN}Simulator is ready!${NC}"
-    echo -e "${NC}----------------------------------------${NC}"
-
-    docker compose -f "${SCRIPT_DIR}/simulation.docker-compose.yaml" --env-file "${SCRIPT_DIR}/etc/simulator.env" wait planning-control web-visualizer simulator
 }
 
 source "${SCRIPT_DIR}/etc/simulator.env"
 parse_arguments "$@"
 check_remote_arguments
 set_architecture
-run_simulation
+run

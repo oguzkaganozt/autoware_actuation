@@ -1,55 +1,97 @@
 services:
-  talker:
-    image: ghcr.io/oguzkaganozt/autoware_snapshots:talker
-    container_name: talker-${RUN_ID}
-    hostname: talker-${RUN_ID}
+  node1:
+    hostname: node1
+    container_name: node1
+    image: ghcr.io/oguzkaganozt/autoware_snapshots:master
     environment:
-      - TS_AUTHKEY=tskey-auth-k5V9RQp1ft11CNTRL-ThTPeZTAjNibTav8odYjNiwimo6gFZUw
-      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_AUTHKEY=tskey-auth-kFxZYSGHu311CNTRL-FHL8V7MB2rWyeZYnTgZ2rWE19RLnGpn7Y
       - TS_USERSPACE=false
-      - TS_HOSTNAME=talker-${RUN_ID}
-      - TS_ROUTES=10.0.0.0/8
+      - TS_HOSTNAME=node1
+      - TS_STATE_DIR=/var/tmp/ts-authkey-test/node1
+      # - TS_ROUTES=10.0.0.0/8
       - ROS_DOMAIN_ID=0
       - ROS_LOCALHOST_ONLY=0
       - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-      - RUN_ID=${RUN_ID}
-      - FASTRTPS_DEFAULT_PROFILES_FILE=/root/shared/fast.xml
-      - MSG_SIZE_MB=0.5
-      - MSG_FREQUENCY=1
-      # - TAILSCALE_TEST=true
+      - SERVICES=node1 node2 node3 node4
+      - ENABLE_WAN=true
     volumes:
-      - /var/tmp/ts-authkey-test/talker:/var/lib/tailscale
+      - /var/tmp/ts-authkey-test/node1:/var/lib/tailscale
       - /dev/net/tun:/dev/net/tun
       - /etc/localtime:/etc/localtime:ro
-      - /var/tmp/fast.xml:/root/shared/fast.xml
     cap_add:
       - net_admin
+      - net_raw
       - sys_module
       - sys_admin
-  listener:
-    image: ghcr.io/oguzkaganozt/autoware_snapshots:listener
-    container_name: listener-${RUN_ID}
-    hostname: listener-${RUN_ID}
+  node2:
+    hostname: node2
+    container_name: node2
+    image: ghcr.io/oguzkaganozt/autoware_snapshots:master
     environment:
-      - TS_AUTHKEY=tskey-auth-k5V9RQp1ft11CNTRL-ThTPeZTAjNibTav8odYjNiwimo6gFZUw
-      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_AUTHKEY=tskey-auth-kFxZYSGHu311CNTRL-FHL8V7MB2rWyeZYnTgZ2rWE19RLnGpn7Y
       - TS_USERSPACE=false
-      - TS_HOSTNAME=listener-${RUN_ID}
-      - TS_ROUTES=10.0.0.0/8
+      - TS_HOSTNAME=node2
+      - TS_STATE_DIR=/var/tmp/ts-authkey-test/node2
+      # - TS_ROUTES=10.0.0.0/8
       - ROS_DOMAIN_ID=0
       - ROS_LOCALHOST_ONLY=0
       - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-      - RUN_ID=${RUN_ID}
-      - FASTRTPS_DEFAULT_PROFILES_FILE=/root/shared/fast.xml
-      - MSG_SIZE_MB=0.5
-      - MSG_FREQUENCY=1
-      # - TAILSCALE_TEST=true
+      - SERVICES=node1 node2 node3 node4
+      - ENABLE_WAN=true
     volumes:
-      - /var/tmp/ts-authkey-test/listener:/var/lib/tailscale
+      - /var/tmp/ts-authkey-test/node2:/var/lib/tailscale
       - /dev/net/tun:/dev/net/tun
       - /etc/localtime:/etc/localtime:ro
-      - /var/tmp/fast.xml:/root/shared/fast.xml
     cap_add:
       - net_admin
+      - net_raw
+      - sys_module
+      - sys_admin
+  node3:
+    hostname: node3
+    container_name: node3
+    image: ghcr.io/oguzkaganozt/autoware_snapshots:master
+    environment:
+      - TS_AUTHKEY=tskey-auth-kFxZYSGHu311CNTRL-FHL8V7MB2rWyeZYnTgZ2rWE19RLnGpn7Y
+      - TS_USERSPACE=false
+      - TS_HOSTNAME=node3
+      - TS_STATE_DIR=/var/tmp/ts-authkey-test/node3
+      # - TS_ROUTES=10.0.0.0/8
+      - ROS_DOMAIN_ID=0
+      - ROS_LOCALHOST_ONLY=0
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      - SERVICES=node1 node2 node3 node4
+      - ENABLE_WAN=true
+    volumes:
+      - /var/tmp/ts-authkey-test/node3:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+      - /etc/localtime:/etc/localtime:ro
+    cap_add:
+      - net_admin
+      - net_raw
+      - sys_module
+      - sys_admin
+  node4:
+    hostname: node4
+    container_name: node4
+    image: ghcr.io/oguzkaganozt/autoware_snapshots:master
+    environment:
+      - TS_AUTHKEY=tskey-auth-kFxZYSGHu311CNTRL-FHL8V7MB2rWyeZYnTgZ2rWE19RLnGpn7Y
+      - TS_USERSPACE=false
+      - TS_HOSTNAME=node4
+      - TS_STATE_DIR=/var/tmp/ts-authkey-test/node4
+      # - TS_ROUTES=10.0.0.0/8
+      - ROS_DOMAIN_ID=0
+      - ROS_LOCALHOST_ONLY=0
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      - SERVICES=node1 node2 node3 node4
+      - ENABLE_WAN=true
+    volumes:
+      - /var/tmp/ts-authkey-test/node4:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+      - /etc/localtime:/etc/localtime:ro
+    cap_add:
+      - net_admin
+      - net_raw
       - sys_module
       - sys_admin

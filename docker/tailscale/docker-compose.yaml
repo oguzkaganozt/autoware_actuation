@@ -1,0 +1,108 @@
+services:
+  planning-control:
+    # hostname: workload
+    network_mode: host
+    container_name: planning-control
+    image: ghcr.io/oguzkaganozt/autoware_snapshots:planning-control-${ARCH}
+    environment:
+      - TS_AUTHKEY=tskey-auth-kFxZYSGHu311CNTRL-FHL8V7MB2rWyeZYnTgZ2rWE19RLnGpn7Y
+      - TS_USERSPACE=false
+      - TS_HOSTNAME=planning-control
+      - TS_STATE_DIR=/var/tmp/ts-authkey-test/planning-control
+      # - TS_ROUTES=10.0.0.0/8
+      - ROS_DOMAIN_ID=0
+      - ROS_LOCALHOST_ONLY=0
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      # - SERVICES=planning-control simulator
+      - FASTRTPS_DEFAULT_PROFILES_FILE=
+      - ENABLE_WAN=true
+    volumes:
+      - /var/tmp/ts-authkey-test/planning-control:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+      - /etc/localtime:/etc/localtime:ro
+    cap_add:
+      - net_admin
+      - net_raw
+      - sys_module
+      - sys_admin
+    command: >-
+      ros2 launch 
+      autoware_launch 
+      planning_simulator.launch.xml 
+      scenario_simulation:=true 
+      vehicle_model:=sample_vehicle 
+      sensor_model:=sample_sensor_kit 
+      map_path:=/autoware/map  
+      use_foa:=false 
+      perception/enable_traffic_light:=false 
+      rviz:=false
+  simulator:
+    # hostname: workload
+    network_mode: host
+    container_name: simulator
+    image: ghcr.io/oguzkaganozt/autoware_snapshots:simulator-visualizer-${ARCH}
+    environment:
+      - TS_AUTHKEY=tskey-auth-kFxZYSGHu311CNTRL-FHL8V7MB2rWyeZYnTgZ2rWE19RLnGpn7Y
+      - TS_USERSPACE=false
+      - TS_HOSTNAME=simulator
+      - TS_STATE_DIR=/var/tmp/ts-authkey-test/simulator
+      # - TS_ROUTES=10.0.0.0/8
+      - ROS_DOMAIN_ID=0
+      - ROS_LOCALHOST_ONLY=0
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      # - SERVICES=planning-control simulator
+      - FASTRTPS_DEFAULT_PROFILES_FILE=
+      # - ENABLE_WAN=true
+    volumes:
+      - /var/tmp/ts-authkey-test/simulator:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+      - /etc/localtime:/etc/localtime:ro
+    cap_add:
+      - net_admin
+      - net_raw
+      - sys_module
+      - sys_admin
+    command: >-
+      /bin/sh -c "sleep 50 &&
+      ros2 launch 
+      scenario_test_runner 
+      scenario_test_runner.launch.py 
+      architecture_type:=awf/universe/20240605 
+      record:=false 
+      sensor_model:=sample_sensor_kit 
+      vehicle_model:=sample_vehicle
+      scenario:=/autoware/simulation/yield_maneuver_demo.yaml
+      map_path:=/autoware/map
+      global_timeout:=240
+      initialize_duration:=90
+      launch_autoware:=false
+      launch_rviz:=false"
+  visualizer:
+    hostname: visualizer
+    network_mode: host
+    container_name: visualizer
+    image: ghcr.io/oguzkaganozt/autoware_snapshots:simulator-visualizer-${ARCH}
+    environment:
+      - TS_AUTHKEY=tskey-auth-kFxZYSGHu311CNTRL-FHL8V7MB2rWyeZYnTgZ2rWE19RLnGpn7Y
+      - TS_USERSPACE=false
+      - TS_HOSTNAME=visualizer
+      - TS_STATE_DIR=/var/tmp/ts-authkey-test/visualizer
+      # - TS_ROUTES=10.0.0.0/8
+      - ROS_DOMAIN_ID=0
+      - ROS_LOCALHOST_ONLY=0
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      # - SERVICES=planning-control visualizer simulator
+      - ENABLE_WAN=true
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - /var/tmp/ts-authkey-test/visualizer:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    cap_add:
+      - net_admin
+      - net_raw
+      - sys_module
+      - sys_admin
+    command: >-
+      rviz2 -d /autoware/simulation/scenario_simulator.rviz

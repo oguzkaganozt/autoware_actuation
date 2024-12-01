@@ -15,4 +15,4 @@ jobs:
       - name: Combine multi arch images for 'Autoware'
         uses: ./.github/actions/combine-multi-arch-images
         with:
-          package-name: autoware
+          package-name: demo_packages
