@@ -285,7 +285,11 @@ run() {
     
     # Infinite loop
     while true; do
-        run_visualizer local
+        if [ "$option_web" ]; then
+            run_visualizer web
+        else
+            run_visualizer local
+        fi
         run_simulation fail
         cleanup
         run_simulation pass
