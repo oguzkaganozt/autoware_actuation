@@ -3,7 +3,7 @@
     <Domain Id="any">
         <General>
             <Interfaces>
-                <NetworkInterface autodetermine="true" priority="default" multicast="default" />
+                <NetworkInterface autodetermine="false" name="lo" priority="default" multicast="default" />
             </Interfaces>
             <AllowMulticast>default</AllowMulticast>
             <MaxMessageSize>65500B</MaxMessageSize>
@@ -15,8 +15,6 @@
         </Internal>
         <Discovery>
             <Peers>
-                <Peer Address="comhpcalt" /> <!-- or <Peer address="fc94:a67f:2b47:756c:6e1c:7c05:7361:7378"/> -->
-                <Peer Address="visualizer" /> <!-- or <Peer address="fc94:6260:26e:e057:9bc:8786:4f8a:c7a6"/> -->
             </Peers>
             <ParticipantIndex>auto</ParticipantIndex>
             <MaxAutoParticipantIndex>40</MaxAutoParticipantIndex>
