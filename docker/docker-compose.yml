@@ -1,11 +1,12 @@
 services:
   simulator:
-    image: ghcr.io/autowarefoundation/openadkit_demo.autoware:aws-reinvent-simulator-amd64
+    image: ghcr.io/autowarefoundation/openadkit_demo.autoware:aws-reinvent-simulator-arm64
     network_mode: "host"
+    restart: always
     volumes:
       - ./etc/simulation:/autoware/scenario-sim
     environment:
-      - ROS_DOMAIN_ID=99
+      - ROS_DOMAIN_ID=88
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - SIMULATION_OUTPUT_DIRECTORY=/autoware/result
     command: >
@@ -16,20 +17,26 @@ services:
       sensor_model:=sample_sensor_kit
       vehicle_model:=sample_vehicle
       initialize_duration:=90
-      global_frame_rate:=15
+      global_timeout:=$TIMEOUT
+      global_frame_rate:=20
       launch_autoware:=false
       launch_rviz:=false
       output_directory:=/autoware/result
 
   planning-control:
-    image: ghcr.io/autowarefoundation/openadkit_demo.autoware:aws-reinvent-planning-control-amd64
+    image: ghcr.io/autowarefoundation/openadkit_demo.autoware:aws-reinvent-planning-control-arm64
+    restart: always
+    depends_on:
+      - simulator 
     volumes:
       - ./etc/simulation/config:/autoware/config
       - ./etc/simulation/config/change_parameters:/usr/local/bin/change_parameters
       - ./etc/simulation:/autoware/scenario-sim
+      - $CONF_FILE:/opt/autoware/share/autoware_launch/config/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/autoware_behavior_path_static_obstacle_avoidance_module/static_obstacle_avoidance.param.yaml
+      - $COMMON_FILE:/opt/autoware/share/autoware_launch/config/planning/scenario_planning/common/common.param.yaml
     network_mode: "host"
     environment:
-      - ROS_DOMAIN_ID=99
+      - ROS_DOMAIN_ID=88
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - SIMULATION_ID=1
       - PLANNING_OUTPUT_FILE=/autoware/result/planning_result.txt
@@ -42,14 +49,18 @@ services:
       rviz:=false
       perception/enable_traffic_light:=false
 
-  visualizer:
-    image: ghcr.io/autowarefoundation/openadkit_demo.autoware:aws-reinvent-simulator-amd64
-    volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+  web-visualizer:
+    image: ghcr.io/autowarefoundation/demo_packages:simulator-visualizer-arm64
+    container_name: web-visualizer
     network_mode: "host"
+    restart: on-failure
+    volumes:
+      - ./etc/simulation:/autoware/scenario-sim
     environment:
-      - ROS_DOMAIN_ID=99
-      - DISPLAY=${DISPLAY}
-      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-    command: >
-      rviz2 -d /opt/autoware/share/autoware_launch/rviz/autoware.rviz
+      - ROS_DOMAIN_ID=88
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+      - NGROK_URL=${NGROK_URL}
+      - VNC_ENABLED=true
+    command: >-
+      sleep infinity
+
