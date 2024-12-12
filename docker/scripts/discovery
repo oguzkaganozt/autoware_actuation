@@ -8,9 +8,9 @@ COLOR_NC="\033[0m"          # nocolor
 
 # === Configuration Variables ===
 RUN_DIR="/tmp/openadkit"
+CYCLONEDDS_URI="${RUN_DIR}/cyclonedds.xml"
 LOG_FILE="${RUN_DIR}/network-config.log"
-LOCK_FILE="${RUN_DIR}/network-config.lock"
-NETPLAN_CONFIG_FILE="${RUN_DIR}/01-openadkit-netcfg.yaml"
+NETPLAN_FILE="/etc/netplan/01-openadkit-netcfg.yaml"
 NETPLAN_TIMEOUT=30
 
 # === Utility ===
@@ -41,111 +41,91 @@ print_help() {
     echo "  -e | --ethernets     (Optional) Configure all ethernets with static IP addresses"
     echo "  -wssid               (Optional) Set the SSID of the node"
     echo "  -wpass               (Optional) Set the password of the node"
-    echo "  -d | --daemon        (Optional) Run as daemon"
+    echo "  -d | --daemon        (Optional) Run as daemon for infinite discovery"
 }
 
 parse_args() {
-    while [ "$1" != "" ]; do
-        case "$1" in
-        -h | --help)
-            print_help
-            exit 1
-            ;;
-        -s | --server)
-            option_server=true
-            ;;
-        -c | --client)
-            option_client=true
-            ;;
-        -e | --ethernets)
-            [[ $EUID -ne 0 ]] && { log_error "Script must be run as root if you want to configure ethernets"; exit 1; }
-            option_ethernets=true
-            ;;
-        -wssid)
-            [[ $EUID -ne 0 ]] && { log_error "Script must be run as root if you want to configure ethernets"; exit 1; }
-            WSSID=$2
-            shift 1
-            ;;
-        -wpass)
-            [[ $EUID -ne 0 ]] && { log_error "Script must be run as root if you want to configure ethernets"; exit 1; }
-            WPASS=$2
-            shift 1
-            ;;
-        -d | --daemon)
-            option_daemon=true
-            ;;
-        *)
-            if [[ -n "$1" ]]; then
-                option_name=$1
-            else
-                log_error "Invalid argument: $1"
-                exit 1
-            fi
-            ;;
-        esac
-        shift 1
-    done
-
-    if [[ -n "$option_server" && -n "$option_client" ]]; then
-        log_error "Both server and client options cannot be set at the same time"
-        print_help
-        exit 1
-    elif [[ -z "$option_server" && -z "$option_client" ]]; then
-        log_error "Either server or client option must be set"
-        print_help
+    local options
+    [[ $EUID -ne 0 ]] && { log_error "Script must be run as root for ethernet config"; exit 1; }
+    grep -q "Ubuntu 22" /etc/os-release || { log_error "This script is designed for Ubuntu 22.x . Current system is not compatible."; exit 1; }
+    if ! options=$(getopt -o hscedw:p:t: --long help,server,client,ethernets,daemon,wssid:,wpass:,token: -n 'parse-options' -- "$@"); then
+        log_error "Failed to parse arguments"
         exit 1
     fi
+    eval set -- "$options"
+
+    while true; do
+        case "$1" in
+            -h|--help) print_help; exit 1 ;;
+            -s|--server) option_server=true ;;
+            -c|--client) option_client=true ;;
+            -e|--ethernets) option_ethernets=true ;;
+            -t|--token) option_token="$2"; shift ;;
+            -w|--wssid) WSSID="$2"; shift ;;
+            -p|--wpass) WPASS="$2"; shift ;;
+            -d|--daemon) option_daemon=true ;;
+            --) shift; break ;;
+            *) log_error "Invalid argument: $1"; exit 1 ;;
+        esac
+        shift
+    done
+    option_name="$1"
+    # Check for errors
+    [[ -n "$option_server" && -n "$option_client" ]] && { log_error "Cannot be both server and client"; exit 1; }
+    [[ -z "$option_server" && -z "$option_client" ]] && { log_error "Must be either server or client"; exit 1; }
+    [[ -z "$option_name" ]] && { log_error "Node name is required"; exit 1; }
+    [[ "$option_client" == "true" && -z "$option_token" ]] && { log_error "Token is required for client mode"; exit 1; }
+    [[ -n "$WSSID" && -z "$WPASS" || -z "$WSSID" && -n "$WPASS" ]] && { log_error "Both SSID and password must be provided for WiFi configuration"; exit 1; }
+    return 0
+}
+
+print_info() {
+    log_info "Running node $option_name"
+    [[ -n "$option_server" ]] && log_info "  as server"
+    [[ -n "$option_client" ]] && log_info "  as client"
+    [[ -n "$option_token" ]] && log_info "  with token: $option_token"
+    [[ -n "$option_ethernets" ]] && log_info "  with ethernets"
+    [[ -n "$WSSID" ]] && log_info "  with wssid: $WSSID"
+    [[ -n "$WPASS" ]] && log_info "  with wpass: $WPASS"
+    log_info "----------------------"
 }
 
 daemonize() {
-    if [[ "$option_daemon" == true && "$DAEMONIZED" != true ]]; then
+    if [[ "${DAEMONIZED}" != "true" ]]; then
         log_info "Starting in daemon mode..."
         export DAEMONIZED=true
-        nohup "$0" "${@}" </dev/null >/dev/null 2>&1 &
+        nohup "$0" "$@" 2>&1 &
         exit 0
     fi
-    exec 1>> /dev/null 2>> /dev/null
 }
 
 create_run_dir() {
     mkdir -p "${RUN_DIR}"
-    touch "$LOG_FILE" && chmod 644 "$LOG_FILE"
-    log_success "All logs can be found in ${LOG_FILE}"
+    touch "$LOG_FILE" && chmod 666 "$LOG_FILE"
+    log_info "All logs can be found in ${LOG_FILE}"
 }
 
 cleanup() {
-    rm -f "$LOCK_FILE"
     pkill -P $$ || true
     pkill avahi-publish || true
     exit 0
 }
 
 # === Network Configuration ===
-validate_yaml() {
-    if ! netplan get all &>/dev/null < "$NETPLAN_CONFIG_FILE"; then
-        log_error "Invalid YAML configuration"
-        cleanup
+declare -g host_num=""
+get_host_num() {
+    if [[ -z "${host_num}" ]]; then
+        local mac_address
+        mac_address=$(ip link show "$(get_interfaces "ethernet" | head -n1)" | awk '/ether/ {print $2; exit}')
+        host_num=$(echo "$mac_address" | tr -d ':' | cksum | cut -d' ' -f1)
+        host_num=$((host_num % 253 + 2))
+        log_info "Generated initial host number: $host_num from MAC: $mac_address"
+    else
+        host_num=$((host_num + 1))
+        [[ $host_num -gt 254 ]] && host_num=2
+        log_info "Incremented host number to: $host_num"
     fi
     return 0
-}
-
-get_host_num() {
-    # If HOST_NUM is already set, increment and return
-    if [[ -n $HOST_NUM ]]; then
-        HOST_NUM=$((HOST_NUM+1))
-        export HOST_NUM
-        echo $HOST_NUM
-        return 0
-    fi
-
-    # First call - generate initial HOST_NUM from MAC address
-    local mac_address
-    mac_address=$(ip link show "$(get_interfaces "ethernet" | head -n1)" | awk '/ether/ {print $2; exit}')
-    HOST_NUM=$(echo "$mac_address" | tr -d ':' | cksum | cut -d' ' -f1)
-    HOST_NUM=$((HOST_NUM % 253 + 2))
-    export HOST_NUM
-    log_info "Generated initial host number: $HOST_NUM from MAC: $mac_address"
-    echo $HOST_NUM
 }
 
 get_interfaces() {
@@ -164,62 +144,76 @@ get_interfaces() {
     fi
 }
 
+validate_yaml() {
+    if ! netplan get all &>/dev/null < "$NETPLAN_FILE"; then
+        log_error "Invalid YAML configuration: \n$(cat "${NETPLAN_FILE}")"
+        cleanup
+    fi
+    return 0
+}
+
 apply_netplan() {
     log_info "Applying netplan configuration..."
-    validate_yaml || { log_error "Invalid YAML configuration"; cleanup; }
+    validate_yaml
     timeout $NETPLAN_TIMEOUT netplan apply || { log_error "Netplan configuration failed"; cleanup; }
-    log_success "Netplan configuration successfully applied"
+    return 0
 }
 
 configure_interfaces() {
-    local config=""
+    local config="" config_header="network:\n  version: 2\n  renderer: NetworkManager\n"
     
     if [[ "$option_ethernets" == true ]]; then
-        config+="ethernets:\n"
+        log_info "Configuring ethernets..."
+        config+="  ethernets:\n"
         for iface in $(get_interfaces "ethernet"); do
+            get_host_num
             config+="    $iface:\n"
             config+="      dhcp4: true\n"
             config+="      dhcp6: true\n"
-            config+="      addresses: [10.0.0.$(get_host_num)/24]\n"
-            config+="      optional: true\n\n"
+            config+="      addresses: \n      - 10.0.0.${host_num}/24\n"
+            config+="      optional: true\n"
         done
     fi
     
     if [[ -n "$WSSID" && -n "$WPASS" ]]; then
-        config+="wifis:\n"
+        log_info "Configuring wifi..."
+        config+="  wifis:\n"
         for iface in $(get_interfaces "wifi"); do
             config+="    $iface:\n"
             config+="      dhcp4: true\n"
             config+="      dhcp6: true\n"
-            config+="      addresses: [10.0.0.$(get_host_num)/24]\n"
-            config+="      optional: true\n\n"
+            config+="      optional: true\n"
+            config+="      access-points:\n"
+            config+="        \"${WSSID}\":\n"
+            config+="          password: \"${WPASS}\"\n"
         done
     fi
     
-    [[ -n "$config" ]] && echo -e "$config" > "$NETPLAN_CONFIG_FILE"
-    apply_netplan
+    [[ -n "$config" ]] && echo -e "$config_header$config" > "$NETPLAN_FILE" && chmod 600 "$NETPLAN_FILE" && apply_netplan
+    log_success "Network configuration successfully applied at ${NETPLAN_FILE} \n----------------------"
+    return 0
 }
 
 finetune_network() {
-    [[ $EUID -ne 0 ]] && { log_error "Run as root to finetune network settings for best DDS performance"; return 0; }
     sysctl -w net.core.rmem_max=1073741824  # 1 GiB, default is 208 KiB
     sysctl -w net.ipv4.ipfrag_time=3  # in seconds, default is 30 s
     sysctl -w net.ipv4.ipfrag_high_thresh=134217728  # 128 MiB, default is 256 KiB
-    log_success "Network finetuning completed"
+    log_success "Network finetuning applied\n----------------------"
+    return 0
 }
 
 configure_network () {
     configure_interfaces
     command -v ufw >/dev/null 2>&1 && ufw status | grep "Status: active" && log_error "Firewall is enabled, consider disabling it for maximum DDS availability"
     finetune_network
+    return 0
 }
 
 # === Discovery ===
 generate_cyclonedds_xml() {
-    local cyclonedds_config="${RUN_DIR}/cyclonedds.xml"
-    log_info "Generating CycloneDDS configuration at ${cyclonedds_config}"
+    log_info "Generating CycloneDDS configuration at ${CYCLONEDDS_URI}"
     
-    cat > "$cyclonedds_config" << 'EOF'
+    cat > "$CYCLONEDDS_URI" << 'EOF'
 <?xml version="1.0" encoding="UTF-8" ?>
 <CycloneDDS xmlns="https://cdds.io/config" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/master/etc/cyclonedds.xsd">
     <Domain Id="any">
@@ -244,9 +238,7 @@ generate_cyclonedds_xml() {
     </Domain>
 </CycloneDDS>
 EOF
-
-    chmod 644 "$cyclonedds_config"
-    export CYCLONEDDS_URI="$cyclonedds_config"
+    chmod 666 "$CYCLONEDDS_URI"
 }
 
 add_interface_xml () {
@@ -268,11 +260,7 @@ add_address_xml () {
 }
 
 avahi_publish() {
-    if [[ -n "$option_server" ]]; then
-        node_name="server-${option_name}"
-    else
-        node_name="client-${option_name}"
-    fi
+    node_name="$([[ -n "$option_server" ]] && echo "server-${option_name}" || echo "client-${option_name}")"
     log_info "Publishing node $node_name..."
 
     while true; do
@@ -306,14 +294,8 @@ main() {
     trap cleanup INT TERM QUIT
     create_run_dir
     parse_args "$@"
-
-    # Check system
-    grep -q "Ubuntu 22" /etc/os-release || { log_error "This script is designed for Ubuntu 22.x . Current system is not compatible."; exit 1; } 
-    [[ "$option_daemon" == true ]] && daemonize "$@"
-    [[ -f "$LOCK_FILE" ]] && { log_error "Lock file ${LOCK_FILE} exists, another instance is running ?"; exit 1; }
-    touch "$LOCK_FILE"
-
-    # Configure network
+    [[ "${option_daemon}" == "true" ]] && daemonize "$@"
+    print_info
     configure_network
 
     # Run discovery
@@ -321,7 +303,7 @@ main() {
     avahi_publish & 
     avahi_discover &
     
-    [[ -z "$option_daemon" ]] && sleep 2 && log_info "Running discovery..." && for _ in {1..8}; do echo -n "."; sleep 1; done && echo " done" && cleanup
+    [[ -z "$option_daemon" ]] && sleep 2 && log_info "Running for 10 seconds..." && for _ in {1..10}; do echo -n "."; sleep 1; done && echo " done" && cleanup
     wait
 }
 
