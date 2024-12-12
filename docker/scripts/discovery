@@ -9,7 +9,7 @@ COLOR_NC="\033[0m"          # nocolor
 # === Configuration Variables ===
 RUN_DIR="/tmp/openadkit"
 CYCLONEDDS_URI="${RUN_DIR}/cyclonedds.xml"
-LOG_FILE="${RUN_DIR}/network-config.log"
+LOG_FILE="${RUN_DIR}/discovery.log"
 NETPLAN_FILE="/etc/netplan/01-openadkit-netcfg.yaml"
 NETPLAN_TIMEOUT=30
 
@@ -94,7 +94,7 @@ daemonize() {
     if [[ "${DAEMONIZED}" != "true" ]]; then
         log_info "Starting in daemon mode..."
         export DAEMONIZED=true
-        nohup "$0" "$@" 2>&1 &
+        nohup "$0" "$@" > /dev/null 2>&1 < /dev/null &
         exit 0
     fi
 }
@@ -289,23 +289,18 @@ avahi_discover() {
 }
 
 # === Main ===
-main() {
-    # Initialize
-    trap cleanup INT TERM QUIT
-    create_run_dir
-    parse_args "$@"
-    [[ "${option_daemon}" == "true" ]] && daemonize "$@"
-    print_info
-    configure_network
+# Initialize
+trap cleanup INT TERM QUIT
+create_run_dir
+parse_args "$@"
+[[ "${option_daemon}" == "true" ]] && daemonize "$@"
+print_info
+configure_network
 
-    # Run discovery
-    generate_cyclonedds_xml
-    avahi_publish & 
-    avahi_discover &
-    
-    [[ -z "$option_daemon" ]] && sleep 2 && log_info "Running for 10 seconds..." && for _ in {1..10}; do echo -n "."; sleep 1; done && echo " done" && cleanup
-    wait
-}
+# Run discovery
+generate_cyclonedds_xml
+avahi_publish & 
+avahi_discover &
 
-# Run
-main "$@"
+[[ -z "$option_daemon" ]] && sleep 2 && log_info "Running for 10 seconds..." && for _ in {1..10}; do echo -n "."; sleep 1; done && echo " done" && cleanup
+wait
