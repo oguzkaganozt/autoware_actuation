@@ -15,9 +15,8 @@ NETPLAN_TIMEOUT=30
 
 # === Utility ===
 log() {
-    local message=$1
-    local COLOR_CODE=$2
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local message=$1 COLOR_CODE=$2 timestamp=""
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     echo "[${timestamp}] ${message}" >> "$LOG_FILE"
     echo -e "${COLOR_CODE}${message}${COLOR_NC}" >&2
 }
