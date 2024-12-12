@@ -119,11 +119,9 @@ get_host_num() {
         mac_address=$(ip link show "$(get_interfaces "ethernet" | head -n1)" | awk '/ether/ {print $2; exit}')
         host_num=$(echo "$mac_address" | tr -d ':' | cksum | cut -d' ' -f1)
         host_num=$((host_num % 253 + 2))
-        log_info "Generated initial host number: $host_num from MAC: $mac_address"
     else
         host_num=$((host_num + 1))
         [[ $host_num -gt 254 ]] && host_num=2
-        log_info "Incremented host number to: $host_num"
     fi
     return 0
 }
@@ -166,7 +164,7 @@ configure_interfaces() {
         log_info "Configuring ethernets..."
         config+="  ethernets:\n"
         for iface in $(get_interfaces "ethernet"); do
-            get_host_num
+            get_host_num && log_info "Assigning static IP 10.0.0.${host_num}/24 to $iface"
             config+="    $iface:\n"
             config+="      dhcp4: true\n"
             config+="      dhcp6: true\n"
@@ -241,22 +239,44 @@ EOF
     chmod 666 "$CYCLONEDDS_URI"
 }
 
-add_interface_xml () {
+add_interface () {
     local interface=$1
     grep -q "$interface" "$CYCLONEDDS_URI" 2>/dev/null && return 0
-    log_info "Adding new interface to CycloneDDS: $interface"
     sed -i "/<\/Interfaces>/i\                <NetworkInterface autodetermine=\"false\" name=\"$interface\" priority=\"default\" multicast=\"default\" />" "$CYCLONEDDS_URI"
 }
 
-declare -g node_list=""
-add_address_xml () {
-    local addr=$1 node_name=$2
-
+add_address () {
+    local addr=$1
     [[ "$addr" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || return 0
-    [[ "$node_list" == *"$node_name"* ]] && return 0
-    log_info "Adding new node $node_name with address $addr to CycloneDDS"
+    grep -q "$addr" "$CYCLONEDDS_URI" 2>/dev/null && log_error "Address already exists in ${CYCLONEDDS_URI}" && return 0
     sed -i "/<\/Peers>/i\                <Peer Address=\"$addr\" />" "$CYCLONEDDS_URI"
-    node_list+="$node_name,"
+}
+
+declare -g node_list=""
+add_node () {
+    local node_name=$1 interface=$2 ip_address=$3
+    [[ "$node_list" == *"$node_name"* ]] && return 0
+    log_success "Adding new node $node_name with address $ip_address on interface $interface"
+    add_interface "$interface"
+    add_address "$ip_address"
+    node_list="$node_list $node_name"
+}
+
+avahi_discover() {
+    log_info "Discovering nodes..."
+    local ipv4_line="" interface="" ip_address="" node_name=""
+    
+    while true; do
+        ipv4_line=$(avahi-browse -trlp _openadkit._tcp | grep "^=.*IPv4" | head -n1) # Format: =;interface;IPv4;name;service;domain;hostname;ip;port;
+        
+        if [[ -n "$ipv4_line" ]]; then
+            interface=$(echo "$ipv4_line" | awk -F';' '{print $2}')
+            ip_address=$(echo "$ipv4_line" | awk -F';' '{print $8}')
+            node_name=$(echo "$ipv4_line" | awk -F';' '{print $4}')
+            add_node "$node_name" "$interface" "$ip_address"
+        fi
+        sleep 0.5
+    done
 }
 
 avahi_publish() {
@@ -266,25 +286,6 @@ avahi_publish() {
     while true; do
         avahi-publish -a -s "$node_name" _openadkit._tcp 8888 || log_error "Avahi publish failed, retrying in 5 seconds..."
         sleep 5
-    done
-}
-
-avahi_discover() {
-    log_info "Discovering nodes..."
-    local ipv4_line="" interface="" ip_address="" node_name=""
-    
-    while true; do
-        # extract first resolved IPv4 line Format: =;interface;IPv4;name;service;domain;hostname;ip;port;
-        ipv4_line=$(avahi-browse -trlp _openadkit._tcp | grep "^=.*IPv4" | head -n1)
-        
-        if [[ -n "$ipv4_line" ]]; then
-            interface=$(echo "$ipv4_line" | awk -F';' '{print $2}')
-            ip_address=$(echo "$ipv4_line" | awk -F';' '{print $8}')
-            node_name=$(echo "$ipv4_line" | awk -F';' '{print $4}')
-            add_interface_xml "$interface"
-            add_address_xml "$ip_address" "$node_name"
-        fi
-        sleep 0.5
     done
 }
 
