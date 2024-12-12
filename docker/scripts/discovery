@@ -87,7 +87,7 @@ print_info() {
     [[ -n "$option_ethernets" ]] && log_info "  with ethernets"
     [[ -n "$WSSID" ]] && log_info "  with wssid: $WSSID"
     [[ -n "$WPASS" ]] && log_info "  with wpass: $WPASS"
-    log_info "----------------------"
+    return 0
 }
 
 daemonize() {
@@ -187,8 +187,7 @@ configure_interfaces() {
         done
     fi
     
-    [[ -n "$config" ]] && echo -e "$config_header$config" > "$NETPLAN_FILE" && chmod 600 "$NETPLAN_FILE" && apply_netplan
-    log_success "Network configuration successfully applied at ${NETPLAN_FILE} \n----------------------"
+    [[ -n "$config" ]] && echo -e "$config_header$config" > "$NETPLAN_FILE" && chmod 600 "$NETPLAN_FILE" && apply_netplan && log_success "Network configuration successfully applied at ${NETPLAN_FILE}"
     return 0
 }
 
@@ -196,7 +195,7 @@ finetune_network() {
     sysctl -w net.core.rmem_max=1073741824  # 1 GiB, default is 208 KiB
     sysctl -w net.ipv4.ipfrag_time=3  # in seconds, default is 30 s
     sysctl -w net.ipv4.ipfrag_high_thresh=134217728  # 128 MiB, default is 256 KiB
-    log_success "Network finetuning applied\n----------------------"
+    log_success "Network finetuning applied"
     return 0
 }
 
