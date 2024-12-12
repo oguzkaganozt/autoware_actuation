@@ -44,11 +44,14 @@ print_help() {
 }
 
 parse_args() {
-    local options
+    # Validation checks
     [[ $EUID -ne 0 ]] && { log_error "Script must be run as root for ethernet config"; exit 1; }
     command -v netplan >/dev/null 2>&1 || { log_error "Netplan is not installed"; exit 1; }
     command -v avahi-browse >/dev/null 2>&1 || { log_error "Avahi is not installed"; exit 1; }
     grep -q "Ubuntu 22" /etc/os-release || { log_error "This script is designed for Ubuntu 22.x . Current system is not compatible."; exit 1; }
+
+    # Parse arguments
+    local options
     if ! options=$(getopt -o hscedw:p:t: --long help,server,client,ethernets,daemon,wssid:,wpass:,token: -n 'parse-options' -- "$@"); then
         log_error "Failed to parse arguments"
         exit 1
@@ -71,6 +74,7 @@ parse_args() {
         shift
     done
     option_name="$1"
+
     # Check for errors
     [[ -n "$option_server" && -n "$option_client" ]] && { log_error "Cannot be both server and client"; exit 1; }
     [[ -z "$option_server" && -z "$option_client" ]] && { log_error "Must be either server or client"; exit 1; }
